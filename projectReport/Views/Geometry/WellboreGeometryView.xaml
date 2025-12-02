@@ -1,0 +1,327 @@
+<UserControl x:Class="ProjectReport.Views.Geometry.WellboreGeometryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ProjectReport.Views.Geometry"
+             xmlns:wellbore="clr-namespace:ProjectReport.Models.Geometry.Wellbore;assembly=ProjectReport"
+             xmlns:converters="clr-namespace:ProjectReport.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="800"
+             Background="{StaticResource WhiteBrush}">
+    
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        <converters:IsNotOpenHoleConverter x:Key="IsNotOpenHoleConverter"/>
+        <converters:IsLessThanOrEqualToConverter x:Key="IsLessThanOrEqualTo"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:SectionTypeToVisibilityConverter x:Key="IsOpenHoleToVisibilityConverter" TargetType="OpenHole" Inverse="False"/>
+        <converters:SectionTypeToVisibilityConverter x:Key="IsNotOpenHoleToVisibilityConverter" TargetType="OpenHole" Inverse="True"/>
+    </UserControl.Resources>
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Section -->
+        <!-- Header Section -->
+        <Border Grid.Row="0" Background="{StaticResource GrayBrush}" CornerRadius="4" Padding="20" Margin="0,0,0,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Well:" FontSize="14" FontWeight="SemiBold" 
+                          VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource BlackBrush}"/>
+                <TextBox Grid.Column="1" Text="{Binding WellName, UpdateSourceTrigger=PropertyChanged}"
+                        Margin="0,0,20,0" Height="30" Padding="5" VerticalContentAlignment="Center"/>
+                
+                <TextBlock Grid.Column="2" Text="Report Number:" FontSize="14" FontWeight="SemiBold" 
+                          VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource BlackBrush}"/>
+                <TextBox Grid.Column="3" Text="{Binding ReportNumber, UpdateSourceTrigger=PropertyChanged}"
+                        Height="30" Padding="5" VerticalContentAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Controls Row -->
+            <Grid Grid.Row="0" Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Total Depth -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Total Wellbore Depth: " 
+                             FontSize="14" 
+                             FontWeight="SemiBold"
+                             VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding TotalWellboreDepth, StringFormat='{}{0:F2} ft'}" 
+                             FontSize="14" 
+                             FontWeight="Bold"
+                             Foreground="{StaticResource OrangeBrush}"
+                             VerticalAlignment="Center"
+                             Margin="5,0,0,0"/>
+                </StackPanel>
+                
+                <!-- Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="Import from CSV/Excel" 
+                           Style="{StaticResource DefaultButton}" 
+                           Padding="15,5"
+                           Margin="0,0,10,0"
+                           Command="{Binding ImportWellboreDataCommand}"/>
+                    <Button Content="Add Section" 
+                           Style="{StaticResource DefaultButton}" 
+                           Padding="15,5"
+                           Margin="0,0,10,0"
+                           Click="AddWellboreSection_Click"/>
+                    <Button Content="Delete Selected" 
+                           Style="{StaticResource DefaultButton}" 
+                           Padding="15,5"
+                           Click="DeleteSelectedSection_Click"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- DataGrid -->
+            <DataGrid Grid.Row="1" 
+                     x:Name="WellboreDataGrid" 
+                     ItemsSource="{Binding WellboreComponents}"
+                     AutoGenerateColumns="False"
+                     CanUserAddRows="False"
+                     CanUserDeleteRows="False"
+                     SelectionMode="Single"
+                     CanUserReorderColumns="False"
+                     CanUserResizeRows="False"
+                     CanUserSortColumns="False"
+                     RowHeaderWidth="40"
+                     RowHeight="35"
+                     SelectionUnit="FullRow"
+                     PreviewKeyDown="WellboreDataGrid_PreviewKeyDown"
+                     BeginningEdit="WellboreDataGrid_BeginningEdit"
+                     CellEditEnding="WellboreDataGrid_CellEditEnding">
+                
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFF5F5F5"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#FFE8E8E8"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                    
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border Background="{TemplateBinding Background}" 
+                                            BorderThickness="0,0,1,1" 
+                                            BorderBrush="#FFE0E0E0"
+                                            Padding="10,0">
+                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Resources>
+                
+                <DataGrid.RowHeaderTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Id}" 
+                                 HorizontalAlignment="Center" 
+                                 VerticalAlignment="Center"
+                                 FontWeight="SemiBold"/>
+                    </DataTemplate>
+                </DataGrid.RowHeaderTemplate>
+                
+                <DataGrid.Columns>
+    <!-- ID Column -->
+    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" IsReadOnly="True" />
+    <!-- Drag Handle Column -->
+    <DataGridTemplateColumn Header="" Width="30" IsReadOnly="True">
+        <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+                <TextBlock Text="☰" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </DataTemplate>
+        </DataGridTemplateColumn.CellTemplate>
+    </DataGridTemplateColumn>
+                    <!-- Section Type -->
+                    <DataGridTemplateColumn Header="Section Type" Width="150" IsReadOnly="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding SectionType}" 
+                                          VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding DataContext.WellboreSectionTypes, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                         SelectedItem="{Binding SectionType, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="0"
+                                         BorderThickness="0"
+                                         VerticalContentAlignment="Center"
+                                         Height="35"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    
+                    <!-- Name -->
+                    <DataGridTextColumn Header="Name" 
+                                      Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" 
+                                      Width="150"
+                                      ElementStyle="{StaticResource DataGridCellStyle}"
+                                      EditingElementStyle="{StaticResource DataGridEditingTextBlockStyle}"/>
+                    
+                    <!-- ID (in) -->
+                    <DataGridTextColumn Header="ID (in)" 
+                                      Binding="{Binding ID, UpdateSourceTrigger=PropertyChanged, StringFormat=F2}" 
+                                      Width="100"
+                                      IsReadOnly="False"
+                                      ElementStyle="{StaticResource DataGridCellStyle}"
+                                      EditingElementStyle="{StaticResource DataGridEditingTextBoxStyle}">
+                    </DataGridTextColumn>
+                    
+                    <!-- OD (in) -->
+                    <DataGridTemplateColumn Header="OD (in)" Width="100" IsReadOnly="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <TextBlock Text="N/A" 
+                                             VerticalAlignment="Center" 
+                                             Foreground="#999999"
+                                             Visibility="{Binding SectionType, Converter={StaticResource IsOpenHoleToVisibilityConverter}}"/>
+                                    <TextBlock Text="{Binding OD, StringFormat=F2}" 
+                                             VerticalAlignment="Center"
+                                             Visibility="{Binding SectionType, Converter={StaticResource IsNotOpenHoleToVisibilityConverter}}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding OD, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+                                        VerticalContentAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                        <DataGridTemplateColumn.CellStyle>
+                            <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SectionType}" Value="OpenHole">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                        <Setter Property="Background" Value="#E8E8E8"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTemplateColumn.CellStyle>
+                    </DataGridTemplateColumn>
+                    
+                    <!-- Top MD (ft) -->
+                    <DataGridTextColumn Header="Top MD (ft)" 
+                                      Binding="{Binding TopMD, UpdateSourceTrigger=PropertyChanged, StringFormat=F2}" 
+                                      Width="120"
+                                      IsReadOnly="False"
+                                      ElementStyle="{StaticResource DataGridCellStyle}"
+                                      EditingElementStyle="{StaticResource DataGridEditingTextBoxStyle}">
+                         <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFirstSection}" Value="True">
+                                        <!-- First section TopMD might be editable or not, usually 0. Let's keep it editable for flexibility or check logic -->
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+                    
+                    <!-- Bottom MD (ft) -->
+                    <DataGridTextColumn Header="Bottom MD (ft)" 
+                                      Binding="{Binding BottomMd, UpdateSourceTrigger=PropertyChanged, StringFormat=F2}" 
+                                      Width="120"
+                                      ElementStyle="{StaticResource DataGridCellStyle}"
+                                      EditingElementStyle="{StaticResource DataGridEditingTextBoxStyle}">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                <Style.Triggers>
+                                    <DataTrigger Value="True">
+                                        <DataTrigger.Binding>
+                                            <MultiBinding Converter="{StaticResource IsLessThanOrEqualTo}">
+                                                <Binding Path="BottomMd"/>
+                                                <Binding Path="TopMd"/>
+                                            </MultiBinding>
+                                        </DataTrigger.Binding>
+                                        <Setter Property="ToolTip" Value="Bottom MD must be greater than Top MD"/>
+                                        <Setter Property="Foreground" Value="Red"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+                    
+                    <!-- Volume (bbl) -->
+                    <DataGridTextColumn Header="Volume (bbl)" 
+                                      Binding="{Binding Volume, StringFormat=F2}" 
+                                      Width="120"
+                                      IsReadOnly="True"
+                                      ElementStyle="{StaticResource DataGridCellStyle}">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                <Setter Property="Background" Value="#F9F9F9"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+                
+                <!-- Row Details -->
+                <DataGrid.RowDetailsTemplate>
+                    <DataTemplate>
+                        <Border Background="#FFF9F9F9" Padding="15,10" Margin="0,0,0,1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Validation: " FontWeight="SemiBold" Margin="0,0,5,0"/>
+                                <TextBlock Text="{Binding ValidationMessage}" Foreground="Red"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </DataGrid.RowDetailsTemplate>
+                
+                <!-- Drag and Drop Support -->
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="AllowDrop" Value="True"/>
+                        <EventSetter Event="PreviewMouseLeftButtonDown" Handler="Row_PreviewMouseLeftButtonDown"/>
+                        <EventSetter Event="Drop" Handler="Row_Drop"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsValid}" Value="False">
+                                <Setter Property="Background" Value="#FFFFF0F0"/>
+                                <Setter Property="ToolTip" Value="{Binding ValidationMessage}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
+        </Grid>
+    </Grid>
+</UserControl>
+

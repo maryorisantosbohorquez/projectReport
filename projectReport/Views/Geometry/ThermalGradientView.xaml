@@ -1,0 +1,335 @@
+<UserControl x:Class="ProjectReport.Views.Geometry.ThermalGradientView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1000"
+             Background="White">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Validation Error Banner -->
+        <Border Grid.Row="0" 
+                Background="#FFF3CD" 
+                BorderBrush="#FFC107" 
+                BorderThickness="1" 
+                CornerRadius="4" 
+                Padding="15,10" 
+                Margin="0,0,0,15"
+                Visibility="{Binding HasValidationError, Converter={StaticResource BoolToVisibility}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" 
+                          Text="⚠" 
+                          FontSize="20" 
+                          Foreground="#FF8C00" 
+                          Margin="0,0,10,0" 
+                          VerticalAlignment="Center"/>
+                
+                <TextBlock Grid.Column="1" 
+                          Text="{Binding ValidationMessage}" 
+                          TextWrapping="Wrap" 
+                          Foreground="#856404" 
+                          VerticalAlignment="Center"/>
+                
+                <Button Grid.Column="2" 
+                       Content="Auto-Sort" 
+                       Command="{Binding AutoSortCommand}" 
+                       Background="#EE7E32" 
+                       Foreground="White" 
+                       Padding="10,5" 
+                       Margin="10,0,0,0"
+                       BorderThickness="0"
+                       Cursor="Hand"/>
+            </Grid>
+        </Border>
+
+        <!-- Action Buttons -->
+        <Grid Grid.Row="1" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Thermal Gradient Points: " 
+                          FontSize="14" 
+                          FontWeight="SemiBold" 
+                          Foreground="#FF808080" 
+                          Margin="0,0,10,0"/>
+                <TextBlock Text="{Binding DataPointsCount}" 
+                          FontSize="14" 
+                          FontWeight="Bold" 
+                          Foreground="Orange"/>
+            </StackPanel>
+
+            <Button Grid.Column="1" 
+                   Content="📊 Import from Survey" 
+                   Command="{Binding ImportFromSurveyCommand}"
+                   Background="#FFE0E0E0" 
+                   Foreground="Black" 
+                   Padding="10,5" 
+                   Margin="0,0,10,0"
+                   ToolTip="Import TVD values from Survey data"/>
+
+            <Button Grid.Column="2" 
+                   Content="📄 Import Data" 
+                   Command="{Binding ImportDataCommand}"
+                   Background="#FFE0E0E0" 
+                   Foreground="Black" 
+                   Padding="10,5" 
+                   Margin="0,0,10,0"
+                   ToolTip="Import from Excel/CSV (Ctrl+I)"/>
+
+            <Button Grid.Column="3" 
+                   Content="📥 Export" 
+                   Command="{Binding ExportDataCommand}"
+                   Background="#FFE0E0E0" 
+                   Foreground="Black" 
+                   Padding="10,5" 
+                   Margin="0,0,10,0"
+                   ToolTip="Export to Excel/CSV/PDF"/>
+
+            <Button Grid.Column="4" 
+                   Content="+ Add Thermal Point" 
+                   Command="{Binding AddPointCommand}"
+                   Background="#FFE0E0E0" 
+                   Foreground="Black" 
+                   Padding="10,5"
+                   ToolTip="Add new thermal point (Ctrl+N)"/>
+        </Grid>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Data Table -->
+            <GroupBox Grid.Column="0" Header="Thermal Gradient Data" Padding="10">
+                <DataGrid x:Name="ThermalDataGrid" 
+                         ItemsSource="{Binding ThermalGradientPoints}"
+                         AutoGenerateColumns="False"
+                         CanUserAddRows="False"
+                         CanUserDeleteRows="False"
+                         SelectionMode="Single"
+                         CanUserReorderColumns="False"
+                         GridLinesVisibility="Horizontal"
+                         AlternatingRowBackground="#F9F9F9">
+                    <DataGrid.Columns>
+                        <!-- ID Column (Read-only) -->
+                        <DataGridTextColumn Header="ID" 
+                                           Binding="{Binding Id}" 
+                                           Width="60" 
+                                           IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#808080"/>
+                                    <Setter Property="FontStyle" Value="Italic"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- TVD Column -->
+                        <DataGridTextColumn Header="TVD (ft)" 
+                                           Binding="{Binding TVD, StringFormat=F2, UpdateSourceTrigger=PropertyChanged}" 
+                                           Width="120">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasValidationWarning}" Value="True">
+                                            <Setter Property="Background" Value="#FFF3CD"/>
+                                            <Setter Property="Foreground" Value="#856404"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Temperature Column -->
+                        <DataGridTextColumn Header="Temperature (°F)" 
+                                           Binding="{Binding Temperature, StringFormat=F1, UpdateSourceTrigger=PropertyChanged}" 
+                                           Width="140">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasValidationWarning}" Value="True">
+                                            <Setter Property="Background" Value="#FFF3CD"/>
+                                            <Setter Property="Foreground" Value="#856404"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Validation Message Column -->
+                        <DataGridTextColumn Header="Notes" 
+                                           Binding="{Binding ValidationMessage}" 
+                                           Width="*" 
+                                           IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#FF8C00"/>
+                                    <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Actions Column -->
+                        <DataGridTemplateColumn Header="Actions" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="×" 
+                                           Command="{Binding DataContext.DeletePointCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                           CommandParameter="{Binding}"
+                                           Foreground="Red"
+                                           Background="Transparent"
+                                           BorderThickness="0"
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Padding="5,0"
+                                           Cursor="Hand"
+                                           ToolTip="Delete this point"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+
+            <!-- GridSplitter -->
+            <GridSplitter Grid.Column="1" 
+                         Width="10" 
+                         HorizontalAlignment="Stretch" 
+                         Background="Transparent"
+                         ShowsPreview="True"/>
+
+            <!-- Temperature Profile Chart -->
+            <GroupBox Grid.Column="2" Header="Temperature Profile" Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Chart Area -->
+                    <Grid Grid.Row="0">
+                        <!-- Placeholder shown when chart is NOT available -->
+                        <Border Background="#F9F9F9" 
+                                BorderBrush="#E0E0E0" 
+                                BorderThickness="1"
+                                Visibility="{Binding ShowChart, Converter={StaticResource BoolToVisibility}, ConverterParameter=Inverse}"
+                                Padding="20">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="📉" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,10" Foreground="#CCCCCC"/>
+                                <TextBlock Text="Insufficient data to render chart" Foreground="#999999" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Summary stats shown when chart IS available -->
+                        <Border Background="#FFFFFF"
+                                BorderBrush="#E0E0E0" 
+                                BorderThickness="0,1,0,0" 
+                                Padding="10"
+                                Visibility="{Binding ShowChart, Converter={StaticResource BoolToVisibility}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Surface Temperature -->
+                                <StackPanel Grid.Column="0" Margin="10">
+                                    <TextBlock Text="Surface Temperature" 
+                                              FontSize="11" 
+                                              FontWeight="SemiBold" 
+                                              Foreground="#FF808080" 
+                                              Margin="0,0,0,5"/>
+                                    <TextBlock Text="{Binding SurfaceTemperature, StringFormat='{}{0:F1} °F'}" 
+                                              FontSize="16" 
+                                              FontWeight="Bold" 
+                                              Foreground="Orange"/>
+                                </StackPanel>
+
+                                <!-- Bottom Hole Temperature -->
+                                <StackPanel Grid.Column="1" Margin="10">
+                                    <TextBlock Text="Bottom Hole Temperature" 
+                                              FontSize="11" 
+                                              FontWeight="SemiBold" 
+                                              Foreground="#FF808080" 
+                                              Margin="0,0,0,5"/>
+                                    <TextBlock Text="{Binding BottomHoleTemperature, StringFormat='{}{0:F1} °F'}" 
+                                              FontSize="16" 
+                                              FontWeight="Bold" 
+                                              Foreground="Orange"/>
+                                </StackPanel>
+
+                                <!-- Temperature Range -->
+                                <StackPanel Grid.Column="2" Margin="10">
+                                    <TextBlock Text="Temperature Range" 
+                                              FontSize="11" 
+                                              FontWeight="SemiBold" 
+                                              Foreground="#FF808080" 
+                                              Margin="0,0,0,5"/>
+                                    <TextBlock Text="{Binding TemperatureRange, StringFormat='{}{0:F1} °F'}" 
+                                              FontSize="16" 
+                                              FontWeight="Bold" 
+                                              Foreground="Orange"/>
+                                </StackPanel>
+
+                                <!-- Average Gradient -->
+                                <StackPanel Grid.Column="3" Margin="10">
+                                    <TextBlock Text="Average Gradient" 
+                                              FontSize="11" 
+                                              FontWeight="SemiBold" 
+                                              Foreground="#FF808080" 
+                                              Margin="0,0,0,5"/>
+                                    <TextBlock FontSize="16" FontWeight="Bold" Foreground="Green"
+                                               Text="{Binding AverageGradient, StringFormat='{}{0:F2} °F/100ft'}"/>
+                                </StackPanel>
+
+                                <!-- Data Points Count -->
+                                <StackPanel Grid.Column="4" Margin="10">
+                                    <TextBlock Text="Data Points Recorded" 
+                                              FontSize="11" 
+                                              FontWeight="SemiBold" 
+                                              Foreground="#FF808080" 
+                                              Margin="0,0,0,5"/>
+                                    <TextBlock Text="{Binding DataPointsCount}" 
+                                              FontSize="16" 
+                                              FontWeight="Bold" 
+                                              Foreground="Orange"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </GroupBox>
+        </Grid>
+    </Grid>
+</UserControl>

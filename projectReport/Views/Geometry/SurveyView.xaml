@@ -1,0 +1,149 @@
+<UserControl x:Class="ProjectReport.Views.Geometry.SurveyView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:ProjectReport.Converters"
+             Background="{StaticResource WhiteBrush}">
+    
+    <UserControl.Resources>
+        <converters:AzimuthToDirectionConverter x:Key="AzimuthToDirectionConverter"/>
+        <converters:IsGreaterThanConverter x:Key="IsGreaterThanConverter"/>
+    </UserControl.Resources>
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Section -->
+        <Border Grid.Row="0" Background="{StaticResource GrayBrush}" CornerRadius="4" Padding="20" Margin="0,0,0,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Well:" FontSize="14" FontWeight="SemiBold" 
+                          VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource BlackBrush}"/>
+                <TextBox Grid.Column="1" x:Name="WellNameTextBox" Text="{Binding WellName, UpdateSourceTrigger=PropertyChanged}"
+                        Margin="0,0,20,0" Height="30"/>
+                
+                <TextBlock Grid.Column="2" Text="Report Number:" FontSize="14" FontWeight="SemiBold" 
+                          VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource BlackBrush}"/>
+                <TextBox Grid.Column="3" x:Name="ReportNumberTextBox" Text="{Binding ReportNumber, UpdateSourceTrigger=PropertyChanged}"
+                        Height="30"/>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Buttons -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,15">
+                    <Button Content="Import from Excel/CSV" 
+                           Style="{StaticResource DefaultButton}" 
+                           Margin="0,0,10,0"
+                           Click="ImportFromExcel_Click"/>
+                    <Button Content="Add Survey Point" 
+                           Style="{StaticResource DefaultButton}" 
+                           Click="AddSurveyPoint_Click"/>
+                </StackPanel>
+
+                <!-- DataGrid -->
+                <DataGrid Grid.Row="1" x:Name="SurveyDataGrid" 
+                         ItemsSource="{Binding SurveyPoints}"
+                         AutoGenerateColumns="False"
+                         CanUserAddRows="False"
+                         CanUserDeleteRows="True"
+                         SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="MD (ft)" Binding="{Binding MD, StringFormat=F2}" Width="130"/>
+                        <DataGridTextColumn Header="TVD (ft)" Binding="{Binding TVD, StringFormat=F2}" Width="120"/>
+                        
+                        <!-- Hole Angle with Warning Icon -->
+                        <DataGridTemplateColumn Header="Hole Angle (deg)" Width="140">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding HoleAngle, StringFormat=F2}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                        <TextBlock Text="⚠" FontSize="14" Foreground="Orange" VerticalAlignment="Center"
+                                                 ToolTip="High angle detected (>90°). Verify data accuracy.">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HoleAngle, Converter={StaticResource IsGreaterThanConverter}, ConverterParameter=90}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        
+                        <!-- Azimuth with Direction Indicator -->
+                        <DataGridTemplateColumn Header="Azimuth (deg)" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Azimuth, StringFormat=F2}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                        <TextBlock Text="{Binding Azimuth, Converter={StaticResource AzimuthToDirectionConverter}}" 
+                                                 FontWeight="SemiBold" 
+                                                 Foreground="#007BFF" 
+                                                 VerticalAlignment="Center"
+                                                 ToolTip="Cardinal direction"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Horizontal Displacement (ft)" Binding="{Binding Northing, StringFormat=F2}" Width="200"/>
+                        
+                        <!-- Action Buttons Column -->
+                        <DataGridTemplateColumn Header="Actions" Width="200">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="↑" 
+                                               ToolTip="Move Up"
+                                               Style="{StaticResource DefaultButton}"
+                                               Background="#28A745"
+                                               Padding="8,4"
+                                               Margin="0,0,5,0"
+                                               Command="{Binding DataContext.MoveSurveyPointUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"/>
+                                        <Button Content="↓" 
+                                               ToolTip="Move Down"
+                                               Style="{StaticResource DefaultButton}"
+                                               Background="#007BFF"
+                                               Padding="8,4"
+                                               Margin="0,0,5,0"
+                                               Command="{Binding DataContext.MoveSurveyPointDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"/>
+                                        <Button Content="Delete" 
+                                               ToolTip="Delete Row"
+                                               Style="{StaticResource DefaultButton}"
+                                               Background="#DC3545"
+                                               Padding="8,4"
+                                               Command="{Binding DataContext.DeleteSurveyPointCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
+

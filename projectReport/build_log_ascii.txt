@@ -1,0 +1,13 @@
+  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos est??n actualizados para la restauraci??n.
+C:\Dev\projectReport\projectReport\Models\Geometry\Wellbore\WellboreComponent.cs(362,10): error CS1513: Se esperaba } [C:\Dev\projectReport\projectReport\ProjectReport_ycf0lo5d_wpftmp.csproj]
+
+ERROR al compilar.
+
+C:\Dev\projectReport\projectReport\Models\Geometry\Wellbore\WellboreComponent.cs(362,10): error CS1513: Se esperaba } [C:\Dev\projectReport\projectReport\ProjectReport_ycf0lo5d_wpftmp.csproj]
+    0 Advertencia(s)
+    1 Errores
+
+Tiempo transcurrido 00:00:01.46
+
+Hay actualizaciones de carga de trabajo disponibles. Ejecute "dotnet workload list" para obtener m??s informaci??n.

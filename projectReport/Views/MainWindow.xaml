@@ -1,0 +1,561 @@
+<Window x:Class="ProjectReport.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:ProjectReport.Views.Controls"
+        Title="PROJECT REPORT MANAGER" Height="700" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Style="{StaticResource {x:Type Window}}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource HeaderBackgroundBrush}" Padding="20,0">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="8" ShadowDepth="2" Direction="270"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="{StaticResource AccentBrush}" Width="4" Height="30" Margin="0,0,15,0" CornerRadius="2"/>
+                    <TextBlock Text="PROJECT REPORT MANAGER" 
+                              FontSize="26" FontWeight="SemiBold" 
+                              Foreground="{StaticResource BlackBrush}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="ConnectButton" Content="Connect" Margin="5,0" Padding="20,8" 
+                           Click="ConnectButton_Click" Cursor="Hand"
+                           Style="{StaticResource DefaultButton}"
+                           FontWeight="SemiBold" FontSize="14"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Sidebar -->
+            <Border Grid.Column="0" Background="{StaticResource ContentBackgroundBrush}" CornerRadius="8" Padding="15">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="6" ShadowDepth="2"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="Navigation" FontSize="18" FontWeight="Bold" Margin="0,0,0,20" Foreground="{StaticResource OrangeBrush}"/>
+                    
+                    <!-- Home Module -->
+                    <Button x:Name="HomeButton"
+                           Margin="0,6" 
+                           Padding="12,10" 
+                           Click="HomeButton_Click" 
+                           HorizontalAlignment="Stretch" 
+                           Background="{StaticResource GrayBrush}" 
+                           Foreground="{StaticResource BlackBrush}" 
+                           BorderThickness="0" 
+                           Cursor="Hand"
+                           FontWeight="SemiBold">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="{StaticResource GrayBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4" 
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource OrangeBrush}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource WhiteBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter Property="Background" Value="#D96D1F"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xf015;" 
+                                      FontFamily="FontAwesome" 
+                                      FontSize="16" 
+                                      Margin="0,0,12,0" 
+                                      VerticalAlignment="Center"/>
+                            <TextBlock Text="Home" 
+                                      FontSize="14" 
+                                      FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Geometry Module -->
+                    <Button x:Name="GeometryButton"
+                           Margin="0,6,0,0" 
+                           Padding="12,10" 
+                           Click="GeometryButton_Click" 
+                           HorizontalAlignment="Stretch" 
+                           Background="{StaticResource OrangeBrush}" 
+                           Foreground="{StaticResource WhiteBrush}" 
+                           BorderThickness="0" 
+                           Cursor="Hand"
+                           FontWeight="SemiBold">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="{StaticResource OrangeBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource WhiteBrush}"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4" 
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#D96D1F"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter Property="Background" Value="#C45E1A"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xf1b2;" 
+                                      FontFamily="FontAwesome" 
+                                      FontSize="16" 
+                                      Margin="0,0,12,0" 
+                                      VerticalAlignment="Center"/>
+                            <TextBlock Text="Geometry" 
+                                      FontSize="14" 
+                                      FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Geometry Submenu -->
+                    <StackPanel x:Name="GeometrySubmenu" 
+                               Margin="15,5,0,0" 
+                               Visibility="Collapsed">
+                        <Button x:Name="WellboreGeometryButton"
+                               Margin="0,4,0,0"
+                               Padding="12,8"
+                               Click="WellboreGeometryButton_Click"
+                               HorizontalAlignment="Stretch"
+                               Background="{StaticResource WhiteBrush}"
+                               Foreground="{StaticResource DarkGrayBrush}"
+                               BorderThickness="0"
+                               Cursor="Hand"
+                               FontSize="13">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DarkGrayBrush}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="4" 
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F0F0F0"/>
+                                            <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter Property="Background" Value="#E0E0E0"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="WELLBORE GEOMETRY" 
+                                      FontWeight="SemiBold"/>
+                        </Button>
+                        
+                        <Button x:Name="DrillStringGeometryButton"
+                               Margin="0,4,0,0"
+                               Padding="12,8"
+                               Click="DrillStringGeometryButton_Click"
+                               HorizontalAlignment="Stretch"
+                               Background="{StaticResource WhiteBrush}"
+                               Foreground="{StaticResource DarkGrayBrush}"
+                               BorderThickness="0"
+                               Cursor="Hand"
+                               FontSize="13">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DarkGrayBrush}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="4" 
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F0F0F0"/>
+                                            <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter Property="Background" Value="#E0E0E0"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="DRILL STRING GEOMETRY" 
+                                      FontWeight="SemiBold"/>
+                        </Button>
+                        
+                        <Button x:Name="SurveyButton"
+                               Margin="0,4,0,0"
+                               Padding="12,8"
+                               Click="SurveyButton_Click"
+                               HorizontalAlignment="Stretch"
+                               Background="{StaticResource WhiteBrush}"
+                               Foreground="{StaticResource DarkGrayBrush}"
+                               BorderThickness="0"
+                               Cursor="Hand"
+                               FontSize="13">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DarkGrayBrush}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="4" 
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F0F0F0"/>
+                                            <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter Property="Background" Value="#E0E0E0"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="SURVEY" 
+                                      FontWeight="SemiBold"/>
+                        </Button>
+                        
+                        <Button x:Name="ThermalGradientButton"
+                               Margin="0,4,0,0"
+                               Padding="12,8"
+                               Click="ThermalGradientButton_Click"
+                               HorizontalAlignment="Stretch"
+                               Background="{StaticResource WhiteBrush}"
+                               Foreground="{StaticResource DarkGrayBrush}"
+                               BorderThickness="0"
+                               Cursor="Hand"
+                               FontSize="13">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DarkGrayBrush}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="4" 
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F0F0F0"/>
+                                            <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter Property="Background" Value="#E0E0E0"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="THERMAL GRADIENT" 
+                                      FontWeight="SemiBold"/>
+                        </Button>
+                        
+                        <Button x:Name="WellTestButton"
+                               Margin="0,4,0,0"
+                               Padding="12,8"
+                               Click="WellTestButton_Click"
+                               HorizontalAlignment="Stretch"
+                               Background="{StaticResource WhiteBrush}"
+                               Foreground="{StaticResource DarkGrayBrush}"
+                               BorderThickness="0"
+                               Cursor="Hand"
+                               FontSize="13">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DarkGrayBrush}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="4" 
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F0F0F0"/>
+                                            <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter Property="Background" Value="#E0E0E0"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="WELL TEST" 
+                                      FontWeight="SemiBold"/>
+                        </Button>
+                        
+                        <Button x:Name="SummaryButton"
+                               Margin="0,4,0,0"
+                               Padding="12,8"
+                               Click="SummaryButton_Click"
+                               HorizontalAlignment="Stretch"
+                               Background="{StaticResource WhiteBrush}"
+                               Foreground="{StaticResource DarkGrayBrush}"
+                               BorderThickness="0"
+                               Cursor="Hand"
+                               FontSize="13">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DarkGrayBrush}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="4" 
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F0F0F0"/>
+                                            <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter Property="Background" Value="#E0E0E0"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="SUMMARY" 
+                                      FontWeight="SemiBold"/>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Background="{StaticResource TableBorderBrush}" HorizontalAlignment="Stretch"/>
+
+            <!-- Content Area -->
+            <Border Grid.Column="2" Background="{StaticResource ContentBackgroundBrush}" CornerRadius="8" Padding="25">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="6" ShadowDepth="2"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <Border Background="{StaticResource OrangeBrush}" Width="4" Height="28" Margin="0,0,12,0" CornerRadius="2"/>
+                        <TextBlock x:Name="ContentTitle" Text="Welcome" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource BlackBrush}"/>
+                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" x:Name="ContentArea" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- Project Information Card -->
+                            <Border Background="{StaticResource SecondaryBackgroundBrush}" BorderBrush="{StaticResource TableBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20" Margin="0,0,0,15">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                        <TextBlock Text="&#xf15b;" FontFamily="FontAwesome" FontSize="18" Foreground="{StaticResource OrangeBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Project Information" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource BlackBrush}"/>
+                                    </StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Project:" Margin="0,8" FontWeight="SemiBold" Foreground="{StaticResource OrangeBrush}"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ProjectNameText" Text="Not Set" Margin="0,8" FontSize="14" Foreground="{StaticResource BlackBrush}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Well:" Margin="0,8" FontWeight="SemiBold" Foreground="{StaticResource OrangeBrush}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="WellNameText" Text="Not Set" Margin="0,8" FontSize="14" Foreground="{StaticResource BlackBrush}"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Last Modified:" Margin="0,8" FontWeight="SemiBold" Foreground="{StaticResource OrangeBrush}"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="LastModifiedText" Text="N/A" Margin="0,8" FontSize="14" Foreground="{StaticResource BlackBrush}"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Status:" Margin="0,8" FontWeight="SemiBold" Foreground="{StaticResource OrangeBrush}"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ProjectStatusText" Text="● Disconnected" Foreground="{StaticResource DarkGrayBrush}" Margin="0,8" FontSize="14" FontWeight="SemiBold"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Quick Summary Card -->
+                            <Border Background="{StaticResource SecondaryBackgroundBrush}" BorderBrush="{StaticResource TableBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20" Margin="0,0,0,15">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                        <TextBlock Text="&#xf200;" FontFamily="FontAwesome" FontSize="18" Foreground="{StaticResource OrangeBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Quick Summary" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource BlackBrush}"/>
+                                    </StackPanel>
+                                    
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Total Depth -->
+                                        <Border Grid.Column="0" Background="{StaticResource ContentBackgroundBrush}" CornerRadius="4" Padding="15" Margin="0,0,10,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Total Depth (TD)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource DarkGrayBrush}"/>
+                                                <TextBlock x:Name="TotalDepthText" Text="0 ft" FontSize="22" FontWeight="Bold" Foreground="{StaticResource OrangeBrush}" Margin="0,8,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                        
+                                        <!-- Current Hole Size -->
+                                        <Border Grid.Column="1" Background="{StaticResource ContentBackgroundBrush}" CornerRadius="4" Padding="15" Margin="0,0,10,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Current Hole Size" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource DarkGrayBrush}"/>
+                                                <TextBlock x:Name="HoleSizeText" Text="N/A" FontSize="22" FontWeight="Bold" Foreground="{StaticResource OrangeBrush}" Margin="0,8,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                        
+                                        <!-- Last Casing -->
+                                        <Border Grid.Column="2" Background="{StaticResource ContentBackgroundBrush}" CornerRadius="4" Padding="15">
+                                            <StackPanel>
+                                                <TextBlock Text="Last Casing" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource DarkGrayBrush}"/>
+                                                <TextBlock x:Name="LastCasingText" Text="N/A" FontSize="22" FontWeight="Bold" Foreground="{StaticResource OrangeBrush}" Margin="0,8,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Casing Program Summary -->
+                            <Border Background="{StaticResource SecondaryBackgroundBrush}" BorderBrush="{StaticResource TableBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20" Margin="0,0,0,15">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                        <TextBlock Text="&#xf0ad;" FontFamily="FontAwesome" FontSize="18" Foreground="{StaticResource OrangeBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Casing Program Summary" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource BlackBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock x:Name="CasingSummaryText" Text="No casing data available" FontSize="13" TextWrapping="Wrap" Foreground="{StaticResource DarkGrayBrush}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Last Survey Info -->
+                            <Border Background="{StaticResource SecondaryBackgroundBrush}" BorderBrush="{StaticResource TableBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                        <TextBlock Text="&#xf124;" FontFamily="FontAwesome" FontSize="18" Foreground="{StaticResource OrangeBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Last Survey" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource BlackBrush}"/>
+                                    </StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="MD" FontSize="12" Foreground="{StaticResource DarkGrayBrush}"/>
+                                            <TextBlock x:Name="LastSurveyMD" Text="0 ft" FontSize="16" FontWeight="Bold" Margin="0,5,0,0" Foreground="{StaticResource BlackBrush}"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="TVD" FontSize="12" Foreground="{StaticResource DarkGrayBrush}"/>
+                                            <TextBlock x:Name="LastSurveyTVD" Text="0 ft" FontSize="16" FontWeight="Bold" Margin="0,5,0,0" Foreground="{StaticResource BlackBrush}"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Inclination" FontSize="12" Foreground="{StaticResource DarkGrayBrush}"/>
+                                            <TextBlock x:Name="LastSurveyInc" Text="0°" FontSize="16" FontWeight="Bold" Margin="0,5,0,0" Foreground="{StaticResource BlackBrush}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="{StaticResource HeaderBackgroundBrush}" Padding="15,0">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="8" ShadowDepth="-2" Direction="90"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xf05a;" FontFamily="FontAwesome" FontSize="14" Foreground="{StaticResource OrangeBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="StatusText" Text="Ready" VerticalAlignment="Center" FontSize="13" Foreground="{StaticResource BlackBrush}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock x:Name="ConnectionStatus" Text="● Disconnected" 
+                              Foreground="{StaticResource DarkGrayBrush}" Margin="10,0,15,0" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13"/>
+                    <TextBlock x:Name="TimeText" VerticalAlignment="Center" FontSize="13" Foreground="{StaticResource DarkGrayBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Toast Notification Overlay -->
+        <controls:ToastNotificationControl Grid.RowSpan="3" Panel.ZIndex="1000"/>
+    </Grid>
+</Window>
+
