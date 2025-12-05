@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -17,6 +17,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <Resource Include="Assets\Logo.png" />
+    <Resource Include="Assets\FooterLogo.png" />
   </ItemGroup>
 
 

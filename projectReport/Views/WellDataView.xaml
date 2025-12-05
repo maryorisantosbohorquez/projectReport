@@ -210,9 +210,10 @@
                                     <Run Text="Fluid Type"/>
                                     <Run Text="*" Foreground="Red"/>
                                 </TextBlock>
-                                <ComboBox ItemsSource="{Binding FluidTypes}" 
-                                         SelectedItem="{Binding CurrentWell.FluidType, UpdateSourceTrigger=PropertyChanged}" 
-                                         Style="{StaticResource InputComboBoxStyle}"/>
+                                <TextBox Text="{Binding CurrentWell.FluidType, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}"
+                                         Tag="Required"/>
+
                             </StackPanel>
 
                             <!-- Spud Date -->
@@ -227,11 +228,13 @@
 
                             <!-- Report For -->
                             <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,0">
-                                <TextBlock Text="Report For (Optional)" 
-                                          Style="{StaticResource RequiredLabelStyle}"/>
-                                <TextBox Text="{Binding CurrentWell.ReportFor, UpdateSourceTrigger=PropertyChanged}" 
-                                        Style="{StaticResource InputTextBoxStyle}"
-                                        ToolTip="e.g., 'Daily Drilling Report', 'End of Well'"/>
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Report For"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <TextBox Text="{Binding CurrentWell.ReportFor, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}"
+                                         Tag="Required"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -303,10 +306,13 @@
 
                             <!-- Rig Name -->
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,0">
-                                <TextBlock Text="Rig Name (Optional)" 
-                                          Style="{StaticResource RequiredLabelStyle}"/>
-                                <TextBox Text="{Binding CurrentWell.RigName, UpdateSourceTrigger=PropertyChanged}" 
-                                        Style="{StaticResource InputTextBoxStyle}"/>
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Rig Name"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <TextBox Text="{Binding CurrentWell.FluidType, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}"
+                                         Tag="Required"/>
                             </StackPanel>
 
                             <!-- Rig Type -->
@@ -368,11 +374,25 @@
 
                             <!-- Location (Onshore/Offshore) -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,15">
-                                <TextBlock Text="Location" 
-                                          Style="{StaticResource RequiredLabelStyle}"/>
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Location"/>
+                                    <Run Text=" *" Foreground="Red"/>
+                                </TextBlock>
+
                                 <ComboBox ItemsSource="{Binding LocationTypes}" 
-                                         SelectedItem="{Binding CurrentWell.Location, UpdateSourceTrigger=PropertyChanged}" 
-                                         Style="{StaticResource InputComboBoxStyle}"/>
+                                        SelectedItem="{Binding CurrentWell.Location, UpdateSourceTrigger=PropertyChanged}">
+                                    <ComboBox.Style>
+                                        <Style TargetType="ComboBox"
+                                            BasedOn="{StaticResource InputComboBoxStyle}">
+                                            <Style.Triggers>
+                                                <Trigger Property="SelectedItem" Value="{x:Null}">
+                                                    <Setter Property="BorderBrush" Value="Red"/>
+                                                    <Setter Property="ToolTip" Value="Location is required"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ComboBox.Style>
+                                </ComboBox>
                             </StackPanel>
 
                             <!-- Country -->

@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterScreen"
         Style="{StaticResource {x:Type Window}}">
 
-    <!-- Estilo sencillo para los botones del menú superior -->
+    <!-- Botones del menu superior -->
     <Window.Resources>
         <Style x:Key="TopMenuButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
@@ -47,9 +47,6 @@
             <RowDefinition Height="*"/>    <!-- Contenido -->
             <RowDefinition Height="40"/>   <!-- Status bar -->
         </Grid.RowDefinitions>
-
-        <!-- ====================== BARRA SUPERIOR ====================== -->
-              <!-- BARRA SUPERIOR NARANJA -->
     <!-- BARRA SUPERIOR NARANJA -->
     <Border Grid.Row="0"
             Background="{StaticResource OrangeBrush}"
@@ -60,16 +57,16 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Izquierda: logo + título + menú -->
+            <!-- Logo + Menu-->
             <DockPanel Grid.Column="0" LastChildFill="False">
-                <!-- Logo + título -->
+                <!-- Logo  -->
                 <StackPanel Orientation="Horizontal"
                             VerticalAlignment="Center"
                             DockPanel.Dock="Left"
                             Margin="12,0,32,0">
                     <Image Source="pack://application:,,,/Assets/Logo.png"
-                           Height="24"
-                           Margin="0,0,8,0"/>
+                           Height="40"
+                           Margin="15,0,8,2"/>
 
                 </StackPanel>
 
@@ -87,34 +84,14 @@
                             Click="GeometryButton_Click"/>
                 </StackPanel>
             </DockPanel>
-
-            <!-- Derecha: Connect oculto -->
-            <StackPanel Grid.Column="1"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center"
-                        Margin="0,0,12,0">
-                <Button x:Name="ConnectButton"
-                        Content="Connect"
-                        Padding="20,6"
-                        Click="ConnectButton_Click"
-                        Cursor="Hand"
-                        Style="{StaticResource DefaultButton}"
-                        FontWeight="SemiBold"
-                        FontSize="13"
-                        Visibility="Collapsed"/>
-            </StackPanel>
         </Grid>
     </Border>
-
-
-
-        <!-- ========= SUBMENÚ GEOMETRY (REQUERIDO POR TU .CS, PERO OCULTO) ========= -->
-        <!-- Lo dejamos fuera del layout visual -->
+        <!-- submenu geometry-->
         <StackPanel x:Name="GeometrySubmenu"
                     Height="0"
                     Visibility="Collapsed"/>
 
-        <!-- ====================== CONTENIDO PRINCIPAL ====================== -->
+        <!-- Contenido Principal -->
         <Border Grid.Row="1"
                 Background="{StaticResource ContentBackgroundBrush}"
                 Padding="16">
@@ -131,7 +108,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Título del módulo -->
+                <!-- titulo modulo -->
                 <StackPanel Orientation="Horizontal"
                             Margin="0,0,0,12">
                     <Border Background="{StaticResource OrangeBrush}"
@@ -146,64 +123,44 @@
                                Foreground="{StaticResource BlackBrush}"/>
                 </StackPanel>
 
-                <!-- Aquí se pinta HomeView, GeometryView, etc. -->
+                <!-- HomeView, GeometryView, etc. -->
                 <ScrollViewer Grid.Row="1"
                               x:Name="ContentArea"
                               VerticalScrollBarVisibility="Auto">
-                    <!-- El contenido lo asigna tu código-behind:
+                    <!-- se ve el contenido en:
                          ContentArea.Content = _homeView / _geometryView / etc. -->
                 </ScrollViewer>
             </Grid>
         </Border>
+<!-- STATUS BAR -->
+<Border Grid.Row="2"
+        Background="#FAFAFA"
+        BorderBrush="#DDDDDD"
+        BorderThickness="1,1,0,0"
+        Padding="6,0">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
-        <!-- ====================== STATUS BAR ====================== -->
-        <Border Grid.Row="2"
-                Background="{StaticResource HeaderBackgroundBrush}"
-                Padding="15,0">
-            <Border.Effect>
-                <DropShadowEffect Color="Black"
-                                  Opacity="0.3"
-                                  BlurRadius="8"
-                                  ShadowDepth="-2"
-                                  Direction="90"/>
-            </Border.Effect>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <!-- IZQUIERDA: logo de la empresa (VERSIÓN FOOTER) -->
+        <StackPanel Orientation="Horizontal"
+                    VerticalAlignment="Center">
+            <Image Source="pack://application:,,,/Assets/FooterLogo.png"
+                   Height="30"
+                   Margin="1080,0,0,0"/>
+        </StackPanel>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="&#xf05a;"
-                               FontFamily="FontAwesome"
-                               FontSize="14"
-                               Foreground="{StaticResource OrangeBrush}"
-                               Margin="0,0,8,0"
-                               VerticalAlignment="Center"/>
-                    <TextBlock x:Name="StatusText"
-                               Text="Ready"
-                               VerticalAlignment="Center"
-                               FontSize="13"
-                               Foreground="{StaticResource BlackBrush}"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal">
-                    <TextBlock x:Name="ConnectionStatus"
-                               Text="● Disconnected" 
-                               Foreground="{StaticResource DarkGrayBrush}"
-                               Margin="10,0,15,0"
-                               VerticalAlignment="Center"
-                               FontWeight="SemiBold"
-                               FontSize="13"/>
-                    <TextBlock x:Name="TimeText"
-                               VerticalAlignment="Center"
-                               FontSize="13"
-                               Foreground="{StaticResource DarkGrayBrush}"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-
+        <!-- DERECHA: hora -->
+        <TextBlock Grid.Column="1"
+                   x:Name="TimeText"
+                   VerticalAlignment="Center"
+                   FontSize="13"
+                   Foreground="{StaticResource DarkGrayBrush}"
+                   Margin="0,0,8,0"/>
+    </Grid>
+</Border>
         <!-- Toast Notification Overlay -->
         <controls:ToastNotificationControl Grid.RowSpan="3"
                                            Panel.ZIndex="1000"/>

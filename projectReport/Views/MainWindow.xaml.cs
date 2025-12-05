@@ -51,78 +51,11 @@ namespace ProjectReport.Views
             NavigateToHome();
         }
 
+
         private void Timer_Tick(object? sender, EventArgs e)
         {
+            // Actualizar la hora en el status bar
             TimeText.Text = DateTime.Now.ToString("HH:mm:ss");
-            UpdateConnectionStatus();
-        }
-
-        private void ConnectButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (_databaseService?.IsConnected ?? false)
-                {
-                    _databaseService.Disconnect();
-                    UpdateStatus("Disconnected from database");
-                }
-                else
-                {
-                    UpdateStatus("Connecting to database...");
-                    var connectionDialog = new ConnectionDialog();
-                    if (connectionDialog.ShowDialog() == true)
-                    {
-                        // Use connection string provided by dialog for a persistent app-level connection
-                        if (!string.IsNullOrWhiteSpace(connectionDialog.ConnectionString))
-                        {
-                            if (_databaseService != null)
-                            {
-                                if (_databaseService.Connect(connectionDialog.ConnectionString, out string? errorMessage))
-                                {
-                                    UpdateStatus("Connected to database successfully");
-                                }
-                                else
-                                {
-                                    string error = errorMessage ?? "Unknown error";
-                                    UpdateStatus($"Failed to connect: {error}");
-                                    MessageBox.Show($"Failed to connect: {error}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                                }
-                            }
-                            else
-                            {
-                                UpdateStatus("Database service not available");
-                                MessageBox.Show("Database service not available", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"Error: {ex.Message}");
-                MessageBox.Show($"Failed to connect: {ex.Message}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void UpdateConnectionStatus()
-        {
-            bool isConnected = _databaseService?.IsConnected ?? false;
-            if (isConnected)
-            {
-                ConnectionStatus.Text = "● Connected";
-                ConnectionStatus.Foreground = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(39, 174, 96));
-                ConnectButton.Content = "Disconnect";
-                ConnectButton.Style = (Style)FindResource("DisconnectButton");
-            }
-            else
-            {
-                ConnectionStatus.Text = "● Disconnected";
-                ConnectionStatus.Foreground = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(231, 76, 60));
-                ConnectButton.Content = "Connect";
-                ConnectButton.Style = (Style)FindResource("DefaultButton");
-            }
         }
 
         #region Navigation
@@ -392,7 +325,7 @@ namespace ProjectReport.Views
 
         private void UpdateStatus(string message)
         {
-            StatusText.Text = message;
+           
         }
 
         protected override void OnClosed(EventArgs e)
