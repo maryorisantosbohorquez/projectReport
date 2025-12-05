@@ -3,9 +3,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Windows.Input; // 👈 IMPORTANTE para DragMove
 using ProjectReport.Services;
 using ProjectReport.Views;
-
 using ProjectReport.Models;
 
 namespace ProjectReport.Views
@@ -403,6 +403,41 @@ namespace ProjectReport.Views
             _databaseService?.Dispose();
             base.OnClosed(e);
         }
+
+        // =========================
+        //  BOTONES DE VENTANA + DRAG
+        // =========================
+
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                try
+                {
+                    DragMove();
+                }
+                catch
+                {
+                    // Ignorar si el sistema no permite arrastrar en ese momento
+                }
+            }
+        }
     }
 }
-
