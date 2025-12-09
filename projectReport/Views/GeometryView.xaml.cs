@@ -22,7 +22,7 @@ namespace ProjectReport.Views
         private object? _draggedItem;
         private int _draggedIndex = -1;
         private Point _dragStartPoint;
-
+        // prueba git 
         public GeometryView()
         {
             try
