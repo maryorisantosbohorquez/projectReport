@@ -81,19 +81,38 @@ namespace ProjectReport.ViewModels.Geometry.Config
             }
         }
 
+        private ComponentType _componentType;
+        public ComponentType ComponentType
+        {
+            get => _componentType;
+            set
+            {
+                if (SetProperty(ref _componentType, value))
+                {
+                    OnPropertyChanged(nameof(ShowToolIDLength));
+                }
+            }
+        }
+
+        public bool ShowToolIDLength => ComponentType != ComponentType.DC;
+
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
         public event Action<bool>? RequestClose;
 
-        public ToolJointConfigViewModel(ToolJointConfig model)
+        public ToolJointConfigViewModel(ToolJointConfig model, ComponentType componentType = ComponentType.DrillPipe)
         {
             Model = model;
+            _componentType = componentType;
             _tjOD = model.TJ_OD;
             _tjID = model.TJ_ID;
             _tjLength = model.TJ_Length;
             _weight = model.Weight;
             _tjIDLength = model.TJ_ID_Length;
+            
+            // Notify that ShowToolIDLength is initialized
+            OnPropertyChanged(nameof(ShowToolIDLength));
 
             SaveCommand = new RelayCommand(_ =>
             {

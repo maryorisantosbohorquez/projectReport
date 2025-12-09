@@ -22,7 +22,6 @@ namespace ProjectReport.Views
         private object? _draggedItem;
         private int _draggedIndex = -1;
         private Point _dragStartPoint;
-        // prueba git 
         public GeometryView()
         {
             try
@@ -194,7 +193,7 @@ namespace ProjectReport.Views
                     case ComponentType.DrillPipe:
                     case ComponentType.HWDP:
                     case ComponentType.DC:
-                        var toolJointWindow = new ToolJointConfigWindow(component.ToolJoint ?? null);
+                        var toolJointWindow = new ToolJointConfigWindow(component.ToolJoint ?? null, component.ComponentType);
                         if (toolJointWindow.ShowDialog() == true)
                         {
                             component.ToolJoint = toolJointWindow.Config;

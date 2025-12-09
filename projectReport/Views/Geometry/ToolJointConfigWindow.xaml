@@ -5,6 +5,10 @@
         Height="500" Width="450"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource AppBackground}">
+    
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
 
     <Grid Margin="30">
         <Grid.RowDefinitions>
@@ -21,59 +25,61 @@
                    Foreground="{DynamicResource AppPrimaryText}"/>
 
         <!-- Form Fields -->
-        <StackPanel Grid.Row="1">
-
-            <StackPanel Margin="0 0 0 20">
-                <TextBlock Text="Tool Joint OD (in)"
-                           FontSize="15"
-                           Foreground="{DynamicResource AppSecondaryText}"
-                           Margin="0,0,0,5"/>
-                <TextBox Text="{Binding TJ_OD, UpdateSourceTrigger=PropertyChanged}"
-                         Height="35"
-                         Style="{StaticResource DefaultTextBox}"/>
-            </StackPanel>
-
-            <StackPanel Margin="0 0 0 20">
-                <TextBlock Text="Tool Joint ID (in)"
-                           FontSize="15"
-                           Foreground="{DynamicResource AppSecondaryText}"
-                           Margin="0,0,0,5"/>
-                <TextBox Text="{Binding TJ_ID, UpdateSourceTrigger=PropertyChanged}"
-                         Height="35"
-                         Style="{StaticResource DefaultTextBox}"/>
-            </StackPanel>
-
-            <StackPanel Margin="0 0 0 20">
-                <TextBlock Text="Tool Joint Length (ft)"
-                           FontSize="15"
-                           Foreground="{DynamicResource AppSecondaryText}"
-                           Margin="0,0,0,5"/>
-                <TextBox Text="{Binding TJ_Length, UpdateSourceTrigger=PropertyChanged}"
-                         Height="35"
-                         Style="{StaticResource DefaultTextBox}"/>
-            </StackPanel>
-
-            <StackPanel Margin="0 0 0 20">
-                <TextBlock Text="Tool ID Length (ft)"
-                           FontSize="15"
-                           Foreground="{DynamicResource AppSecondaryText}"
-                           Margin="0,0,0,5"/>
-                <TextBox Text="{Binding TJ_ID_Length, UpdateSourceTrigger=PropertyChanged}"
-                         Height="35"
-                         Style="{StaticResource DefaultTextBox}"/>
-            </StackPanel>
-
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <TextBlock Text="Weight (lb/ft)"
-                           FontSize="15"
-                           Foreground="{DynamicResource AppSecondaryText}"
-                           Margin="0,0,0,5"/>
-                <TextBox Text="{Binding Weight, UpdateSourceTrigger=PropertyChanged}"
-                         Height="35"
-                         Style="{StaticResource DefaultTextBox}"/>
-            </StackPanel>
 
-        </StackPanel>
+                <StackPanel Margin="0 0 0 20">
+                    <TextBlock Text="Tool Joint OD (in)"
+                               FontSize="15"
+                               Foreground="{DynamicResource AppSecondaryText}"
+                               Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding TJ_OD, UpdateSourceTrigger=PropertyChanged}"
+                             Height="35"
+                             Style="{StaticResource DefaultTextBox}"/>
+                </StackPanel>
+
+                <StackPanel Margin="0 0 0 20">
+                    <TextBlock Text="Tool Joint ID (in)"
+                               FontSize="15"
+                               Foreground="{DynamicResource AppSecondaryText}"
+                               Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding TJ_ID, UpdateSourceTrigger=PropertyChanged}"
+                             Height="35"
+                             Style="{StaticResource DefaultTextBox}"/>
+                </StackPanel>
+
+                <StackPanel Margin="0 0 0 20">
+                    <TextBlock Text="Tool Joint Length (ft)"
+                               FontSize="15"
+                               Foreground="{DynamicResource AppSecondaryText}"
+                               Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding TJ_Length, UpdateSourceTrigger=PropertyChanged}"
+                             Height="35"
+                             Style="{StaticResource DefaultTextBox}"/>
+                </StackPanel>
+
+                <StackPanel Margin="0 0 0 20" Visibility="{Binding ShowToolIDLength, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="Tool ID Length (ft)"
+                               FontSize="15"
+                               Foreground="{DynamicResource AppSecondaryText}"
+                               Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding TJ_ID_Length, UpdateSourceTrigger=PropertyChanged}"
+                             Height="35"
+                             Style="{StaticResource DefaultTextBox}"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Weight (lb/ft)"
+                               FontSize="15"
+                               Foreground="{DynamicResource AppSecondaryText}"
+                               Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding Weight, UpdateSourceTrigger=PropertyChanged}"
+                             Height="35"
+                             Style="{StaticResource DefaultTextBox}"/>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
 
         <!-- Buttons -->
         <StackPanel Grid.Row="2"
