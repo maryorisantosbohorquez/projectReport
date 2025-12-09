@@ -1,0 +1,168 @@
+<Window x:Class="ProjectReport.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:ProjectReport.Views.Controls"
+        Title="PROJECT REPORT MANAGER"
+        Height="700" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Style="{StaticResource {x:Type Window}}">
+
+    <!-- Botones del menu superior -->
+    <Window.Resources>
+        <Style x:Key="TopMenuButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Margin" Value="4,0,4,0"/>
+            <Setter Property="Padding" Value="16,4"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF9B3A"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#E86F10"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>   <!-- Barra superior -->
+            <RowDefinition Height="*"/>    <!-- Contenido -->
+            <RowDefinition Height="40"/>   <!-- Status bar -->
+        </Grid.RowDefinitions>
+    <!-- BARRA SUPERIOR NARANJA -->
+    <Border Grid.Row="0"
+            Background="{StaticResource OrangeBrush}"
+            MouseLeftButtonDown="Header_MouseLeftButtonDown">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Logo + Menu-->
+            <DockPanel Grid.Column="0" LastChildFill="False">
+                <!-- Logo  -->
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Left"
+                            Margin="12,0,32,0">
+                    <Image Source="pack://application:,,,/Assets/Logo.png"
+                           Height="40"
+                           Margin="15,0,8,2"/>
+
+                </StackPanel>
+
+                <!-- Menú -->
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Left">
+                    <Button x:Name="HomeButton"
+                            Content="Home"
+                            Style="{StaticResource TopMenuButtonStyle}"
+                            Click="HomeButton_Click"/>
+                    <Button x:Name="GeometryButton"
+                            Content="Geometry"
+                            Style="{StaticResource TopMenuButtonStyle}"
+                            Click="GeometryButton_Click"/>
+                </StackPanel>
+            </DockPanel>
+        </Grid>
+    </Border>
+        <!-- submenu geometry-->
+        <StackPanel x:Name="GeometrySubmenu"
+                    Height="0"
+                    Visibility="Collapsed"/>
+
+        <!-- Contenido Principal -->
+        <Border Grid.Row="1"
+                Background="{StaticResource ContentBackgroundBrush}"
+                Padding="16">
+            <Border.Effect>
+                <DropShadowEffect Color="Black"
+                                  Opacity="0.15"
+                                  BlurRadius="6"
+                                  ShadowDepth="2"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- titulo modulo -->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0,0,0,12">
+                    <Border Background="{StaticResource OrangeBrush}"
+                            Width="4" Height="24"
+                            Margin="0,0,10,0"
+                            CornerRadius="2"/>
+                    <TextBlock x:Name="ContentTitle"
+                               Text="Home"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource BlackBrush}"/>
+                </StackPanel>
+
+                <!-- HomeView, GeometryView, etc. -->
+                <ScrollViewer Grid.Row="1"
+                              x:Name="ContentArea"
+                              VerticalScrollBarVisibility="Auto">
+                    <!-- se ve el contenido en:
+                         ContentArea.Content = _homeView / _geometryView / etc. -->
+                </ScrollViewer>
+            </Grid>
+        </Border>
+<!-- STATUS BAR -->
+<Border Grid.Row="2"
+        Background="#FAFAFA"
+        BorderBrush="#DDDDDD"
+        BorderThickness="1,1,0,0"
+        Padding="6,0">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- IZQUIERDA: logo de la empresa (VERSIÓN FOOTER) -->
+        <StackPanel Orientation="Horizontal"
+                    VerticalAlignment="Center">
+            <Image Source="pack://application:,,,/Assets/FooterLogo.png"
+                   Height="30"
+                   Margin="1080,0,0,0"/>
+        </StackPanel>
+
+        <!-- DERECHA: hora -->
+        <TextBlock Grid.Column="1"
+                   x:Name="TimeText"
+                   VerticalAlignment="Center"
+                   FontSize="13"
+                   Foreground="{StaticResource DarkGrayBrush}"
+                   Margin="0,0,8,0"/>
+    </Grid>
+</Border>
+        <!-- Toast Notification Overlay -->
+        <controls:ToastNotificationControl Grid.RowSpan="3"
+                                           Panel.ZIndex="1000"/>
+    </Grid>
+</Window>

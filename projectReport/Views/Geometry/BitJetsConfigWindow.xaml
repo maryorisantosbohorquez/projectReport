@@ -1,0 +1,93 @@
+<Window x:Class="ProjectReport.Views.Geometry.BitJetsConfigWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Configure Jets"
+        Height="350" 
+        Width="450"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource AppBackground}">
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Text="Configure Jets"
+                   FontSize="22"
+                   FontWeight="SemiBold"
+                   Margin="0 0 12 0"
+                   Foreground="{DynamicResource AppPrimaryText}"/>
+
+        <!-- Configuration Form -->
+        <StackPanel Grid.Row="1" Margin="0 20 0 20">
+            <!-- Number of Jets -->
+            <StackPanel Margin="0 0 0 20">
+                <TextBlock Text="Number of Jets"
+                           FontSize="15"
+                           Foreground="{DynamicResource AppSecondaryText}"
+                           Margin="0,0,0,5"/>
+                <TextBox Text="{Binding NumberOfJets, UpdateSourceTrigger=PropertyChanged}"
+                         Height="35"
+                         Style="{StaticResource DefaultTextBox}"/>
+            </StackPanel>
+
+            <!-- Diameter in 32nds of an inch -->
+            <StackPanel Margin="0 0 0 20">
+                <TextBlock Text="Jet Diameter (32nds of an inch)"
+                           FontSize="15"
+                           Foreground="{DynamicResource AppSecondaryText}"
+                           Margin="0,0,0,5"/>
+                <TextBox Text="{Binding DiameterIn32nds, UpdateSourceTrigger=PropertyChanged}"
+                         Height="35"
+                         Style="{StaticResource DefaultTextBox}"/>
+            </StackPanel>
+
+            <!-- TFA Display -->
+            <Border Background="{DynamicResource AppCardBackground}" 
+                    CornerRadius="4" 
+                    Padding="15"
+                    Margin="0 10 0 0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Text="Total Flow Area (TFA):"
+                               FontWeight="SemiBold"
+                               FontSize="15"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AppPrimaryText}"/>
+                    
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding TFA, StringFormat='{}{0:F3} in²'}"
+                               FontWeight="Bold"
+                               FontSize="16"
+                               HorizontalAlignment="Right"
+                               Foreground="{DynamicResource AppAccent}"/>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0 10 0 0">
+            <Button Content="Cancel" 
+                    Width="100" Height="35"
+                    Command="{Binding CancelCommand}"
+                    Margin="0 0 15 0"
+                    Style="{StaticResource DefaultButton}"/>
+            
+            <Button Content="Save" 
+                    Width="100" Height="35"
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource PrimaryButton}"/>
+        </StackPanel>
+    </Grid>
+</Window>

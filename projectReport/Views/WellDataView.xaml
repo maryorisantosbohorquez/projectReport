@@ -1,0 +1,508 @@
+<UserControl x:Class="ProjectReport.Views.WellDataView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1000"
+             Background="White">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        
+        <!-- Expander Header Style -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#333333"/>
+        </Style>
+
+        <!-- Required Field Label Style -->
+        <Style x:Key="RequiredLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <!-- Text Box Style -->
+        <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style x:Key="InputComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Height" Value="32"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="WELL DATA" 
+                          FontSize="24" 
+                          FontWeight="Bold" 
+                          Foreground="#333333"/>
+                <TextBlock Text="{Binding CurrentWell.WellName, FallbackValue='New Well'}" 
+                          FontSize="14" 
+                          Foreground="#808080" 
+                          Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="{Binding LastSavedText}" 
+                          FontSize="12" 
+                          Foreground="Green" 
+                          HorizontalAlignment="Right"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Validation Summary -->
+        <Border Grid.Row="1" 
+                Background="#F0F0F0" 
+                BorderBrush="#CCCCCC" 
+                BorderThickness="1" 
+                CornerRadius="4" 
+                Padding="15" 
+                Margin="0,0,0,20">
+            <TextBlock Text="{Binding ValidationSummary}" 
+                      FontSize="13" 
+                      TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- Scrollable Form Content -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                
+                <!-- Section 1: General Well Information -->
+                <Expander IsExpanded="True" Margin="0,0,0,10">
+                    <Expander.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✓" 
+                                      Foreground="Green" 
+                                      FontSize="16" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,10,0"
+                                      Visibility="{Binding IsSection1Complete, Converter={StaticResource BoolToVisibility}}"/>
+                            <TextBlock Text="⚠" 
+                                      Foreground="Orange" 
+                                      FontSize="16" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,10,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSection1Complete}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="General Well Information (Required)" 
+                                      Style="{StaticResource SectionHeaderStyle}"/>
+                        </StackPanel>
+                    </Expander.Header>
+                    <Border BorderBrush="#E0E0E0" BorderThickness="1" Padding="15" Margin="0,10,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Well Name -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,15">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Well Name"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <TextBox Text="{Binding CurrentWell.WellName, UpdateSourceTrigger=PropertyChanged}" 
+                                        Style="{StaticResource InputTextBoxStyle}"/>
+                            </StackPanel>
+
+                            <!-- Operator -->
+                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,15">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Operator"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <TextBox Text="{Binding CurrentWell.Operator, UpdateSourceTrigger=PropertyChanged}" 
+                                        Style="{StaticResource InputTextBoxStyle}"/>
+                            </StackPanel>
+
+                            <!-- Operator Logo -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,15">
+                                <TextBlock Text="Operator Logo (Optional)" 
+                                          Style="{StaticResource RequiredLabelStyle}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Logo Preview -->
+                                    <Border Grid.Column="0" 
+                                           Width="100" 
+                                           Height="100" 
+                                           BorderBrush="#CCCCCC" 
+                                           BorderThickness="1" 
+                                           Margin="0,0,15,0">
+                                        <Grid>
+                                            <TextBlock Text="No Logo" 
+                                                      HorizontalAlignment="Center" 
+                                                      VerticalAlignment="Center" 
+                                                      Foreground="#AAAAAA"
+                                                      Visibility="{Binding CurrentWell.OperatorLogoPath, Converter={StaticResource BoolToVisibility}}"/>
+                                            <Image Source="{Binding CurrentWell.OperatorLogoPath}" 
+                                                  Stretch="Uniform"
+                                                  Margin="5"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Upload Controls -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <Button Content="📁 Upload Image" 
+                                               Command="{Binding UploadLogoCommand}"
+                                               Background="#FFE0E0E0" 
+                                               Foreground="Black" 
+                                               Padding="10,5" 
+                                               Margin="0,0,0,10"
+                                               HorizontalAlignment="Left"/>
+                                        <Button Content="Remove" 
+                                               Command="{Binding RemoveLogoCommand}"
+                                               Background="Transparent" 
+                                               Foreground="Red" 
+                                               Padding="10,5"
+                                               BorderThickness="0"
+                                               HorizontalAlignment="Left"/>
+                                        <TextBlock Text="Recommended: 200x200px | Max size: 2MB | Formats: PNG, JPG, SVG" 
+                                                  FontSize="11" 
+                                                  Foreground="#808080" 
+                                                  Margin="0,10,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Fluid Type -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,15">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Fluid Type"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <TextBox Text="{Binding CurrentWell.FluidType, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}"
+                                         Tag="Required"/>
+
+                            </StackPanel>
+
+                            <!-- Spud Date -->
+                            <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,15">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Spud Date"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <DatePicker SelectedDate="{Binding CurrentWell.SpudDate, UpdateSourceTrigger=PropertyChanged}" 
+                                           Height="32"/>
+                            </StackPanel>
+
+                            <!-- Report For -->
+                            <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,0">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Report For"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <TextBox Text="{Binding CurrentWell.ReportFor, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}"
+                                         Tag="Required"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Expander>
+
+                <!-- Section 2: Well Design & Classification -->
+                <Expander IsExpanded="False" Margin="0,0,0,10">
+                    <Expander.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✓" 
+                                      Foreground="Green" 
+                                      FontSize="16" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,10,0"
+                                      Visibility="{Binding IsSection2Complete, Converter={StaticResource BoolToVisibility}}"/>
+                            <TextBlock Text="⚠" 
+                                      Foreground="Orange" 
+                                      FontSize="16" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,10,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSection2Complete}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="Well Design &amp; Classification (Required)" 
+                                      Style="{StaticResource SectionHeaderStyle}"/>
+                        </StackPanel>
+                    </Expander.Header>
+                    <Border BorderBrush="#E0E0E0" BorderThickness="1" Padding="15" Margin="0,10,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Trajectory -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,15">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Trajectory"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <ComboBox ItemsSource="{Binding TrajectoryTypes}" 
+                                         SelectedItem="{Binding CurrentWell.Trajectory, UpdateSourceTrigger=PropertyChanged}" 
+                                         Style="{StaticResource InputComboBoxStyle}"/>
+                            </StackPanel>
+
+                            <!-- Well Type -->
+                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,15">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Well Type"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <ComboBox ItemsSource="{Binding WellTypes}" 
+                                         SelectedItem="{Binding CurrentWell.WellType, UpdateSourceTrigger=PropertyChanged}" 
+                                         Style="{StaticResource InputComboBoxStyle}"/>
+                            </StackPanel>
+
+                            <!-- Rig Name -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,0">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Rig Name"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <TextBox Text="{Binding CurrentWell.FluidType, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}"
+                                         Tag="Required"/>
+                            </StackPanel>
+
+                            <!-- Rig Type -->
+                            <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,0">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Rig Type"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <ComboBox ItemsSource="{Binding RigTypes}" 
+                                         SelectedItem="{Binding CurrentWell.RigType, UpdateSourceTrigger=PropertyChanged}" 
+                                         Style="{StaticResource InputComboBoxStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Expander>
+
+                <!-- Section 3: Location Details -->
+                <Expander IsExpanded="False" Margin="0,0,0,10">
+                    <Expander.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✓" 
+                                      Foreground="Green" 
+                                      FontSize="16" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,10,0"
+                                      Visibility="{Binding IsSection3Complete, Converter={StaticResource BoolToVisibility}}"/>
+                            <TextBlock Text="⚠" 
+                                      Foreground="Orange" 
+                                      FontSize="16" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,10,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSection3Complete}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="Location Details" 
+                                      Style="{StaticResource SectionHeaderStyle}"/>
+                        </StackPanel>
+                    </Expander.Header>
+                    <Border BorderBrush="#E0E0E0" BorderThickness="1" Padding="15" Margin="0,10,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Location (Onshore/Offshore) -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,15">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Location"/>
+                                    <Run Text=" *" Foreground="Red"/>
+                                </TextBlock>
+
+                                <ComboBox ItemsSource="{Binding LocationTypes}" 
+                                        SelectedItem="{Binding CurrentWell.Location, UpdateSourceTrigger=PropertyChanged}">
+                                    <ComboBox.Style>
+                                        <Style TargetType="ComboBox"
+                                            BasedOn="{StaticResource InputComboBoxStyle}">
+                                            <Style.Triggers>
+                                                <Trigger Property="SelectedItem" Value="{x:Null}">
+                                                    <Setter Property="BorderBrush" Value="Red"/>
+                                                    <Setter Property="ToolTip" Value="Location is required"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ComboBox.Style>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Country -->
+                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,15">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                <Run Text="Country"/>
+                                <Run Text=" *" Foreground="Red"/>
+                            </TextBlock>
+
+                            <ComboBox ItemsSource="{Binding Countries}"
+                                    SelectedItem="{Binding CurrentWell.Country, UpdateSourceTrigger=PropertyChanged}"
+                                    Style="{StaticResource InputComboBoxStyle}"
+                                    Tag="Required"
+                                    IsEditable="False"/>
+                        </StackPanel>
+
+                            <!-- Cuenca -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,15">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Basin"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <TextBox Text="{Binding CurrentWell.Cuenca, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}"
+                                         Tag="Required"/>
+                            </StackPanel>
+
+                            <!-- State/Province -->
+                            <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,15">
+                            <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                <Run Text="State/Province"/>
+                                <Run Text=" *" Foreground="Red"/>
+                            </TextBlock>
+
+                            <ComboBox ItemsSource="{Binding ColombianStates}"
+                                    SelectedItem="{Binding CurrentWell.State, UpdateSourceTrigger=PropertyChanged}"
+                                    Style="{StaticResource InputComboBoxStyle}"
+                                    Tag="Required"
+                                    IsEditable="False"/>
+                        </StackPanel>
+
+                            <!-- Municipio -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,15">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Municipality"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <TextBox Text="{Binding CurrentWell.Municipality, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}"
+                                         Tag="Required"/>
+                            </StackPanel>
+
+                            <!-- Contractor -->
+                            <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,0">
+                                <TextBlock Style="{StaticResource RequiredLabelStyle}">
+                                    <Run Text="Field(block)"/>
+                                    <Run Text="*" Foreground="Red"/>
+                                </TextBlock>
+                                <TextBox Text="{Binding CurrentWell.Field, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputTextBoxStyle}"
+                                         Tag="Required"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Action Buttons -->
+        <Grid Grid.Row="3" Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="1" 
+                   Content="Cancel" 
+                   Command="{Binding CancelCommand}"
+                   Background="Transparent" 
+                   Foreground="#666666" 
+                   Padding="20,10" 
+                   Margin="0,0,10,0"
+                   BorderBrush="#CCCCCC"
+                   BorderThickness="1"
+                   Width="120"
+                   Height="40"/>
+
+            <Button Grid.Column="2" 
+                   Content="Save" 
+                   Command="{Binding SaveCommand}"
+                   Background="#FFE0E0E0" 
+                   Foreground="Black" 
+                   Padding="20,10" 
+                   Margin="0,0,10,0"
+                   Width="120"
+                   Height="40"/>
+
+            <Button Grid.Column="3" 
+                   Content="Save &amp; Continue" 
+                   Command="{Binding SaveAndContinueCommand}"
+                   Background="#EE7E32" 
+                   Foreground="White" 
+                   Padding="20,10"
+                   BorderThickness="0"
+                   Width="160"
+                   Height="40"
+                   FontWeight="SemiBold"
+                   Cursor="Hand"/>
+        </Grid>
+    </Grid>
+</UserControl>
