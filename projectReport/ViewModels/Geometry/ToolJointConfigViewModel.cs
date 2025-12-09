@@ -14,6 +14,7 @@ namespace ProjectReport.ViewModels.Geometry.Config
         private double _tjID;
         private double _tjLength;
         private double _weight;
+        private double _tjIDLength;
 
         public double TJ_OD
         {
@@ -67,7 +68,6 @@ namespace ProjectReport.ViewModels.Geometry.Config
             }
         }
 
-        private double _tjIDLength;
         public double TJ_ID_Length
         {
             get => Model.TJ_ID_Length;

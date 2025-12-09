@@ -101,16 +101,19 @@
                         <DataGridTextColumn Header="OD (in)" Binding="{Binding Od, StringFormat=F2}" Width="100"/>
                         <DataGridTextColumn Header="ID (in)" Binding="{Binding IdValue, StringFormat=F2}" Width="100"/>
                         <DataGridTextColumn Header="Volume (bbl)" Binding="{Binding InternalVolume, StringFormat=F2}" Width="120" IsReadOnly="True"/>
-                        <DataGridTemplateColumn Header="Configure" Width="100">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="Configure" 
-                                           Style="{StaticResource DefaultButton}"
-                                           Click="ConfigureComponent_Click"
-                                           Tag="{Binding}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Config" MinWidth="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Configurar..."
+                                        Padding="10,4"
+                                        HorizontalAlignment="Center"
+                                        Style="{StaticResource DefaultButton}"
+                                        Click="ConfigureComponent_Click"
+                                        Tag="{Binding}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

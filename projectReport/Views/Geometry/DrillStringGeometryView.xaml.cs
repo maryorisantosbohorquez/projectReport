@@ -49,7 +49,6 @@ namespace ProjectReport.Views.Geometry
                 {
                     case ComponentType.DrillPipe:
                     case ComponentType.HWDP:
-                    case ComponentType.DC:
                         var toolJointWindow = new ToolJointConfigWindow(component.ToolJoint ?? null, component.ComponentType);
                         if (toolJointWindow.ShowDialog() == true)
                         {

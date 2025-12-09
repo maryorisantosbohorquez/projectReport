@@ -1,0 +1,94 @@
+<UserControl x:Class="ProjectReport.Views.Inventory.InventoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="900">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>   <!-- Header / filtros -->
+            <RowDefinition/>                 <!-- Tabla -->
+            <RowDefinition Height="Auto"/>   <!-- Botones -->
+        </Grid.RowDefinitions>
+
+        <!-- HEADER / FILTROS -->
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,10">
+            <TextBlock Text="Inventory - Chemicals"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Margin="0,0,20,0"
+                       VerticalAlignment="Center"/>
+
+            <TextBlock Text="Search:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,5,0"/>
+            <TextBox Width="200"
+                     Margin="0,0,15,0"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Category:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,5,0"/>
+            <ComboBox Width="180"
+                      VerticalAlignment="Center">
+                <ComboBoxItem Content="All" IsSelected="True"/>
+                <ComboBoxItem Content="Mud Chemical"/>
+                <ComboBoxItem Content="Cementing Chemical"/>
+                <ComboBoxItem Content="Completion Chemical"/>
+                <ComboBoxItem Content="General Chemical"/>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- TABLA -->
+        <DataGrid Grid.Row="1"
+                  ItemsSource="{Binding Items}"
+                  SelectedItem="{Binding SelectedItem}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  Margin="0,0,0,10">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Code" Binding="{Binding ItemCode}" Width="*" />
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*" />
+                <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*" />
+                <DataGridTextColumn Header="Packaging" Binding="{Binding Packaging}" Width="*" />
+                <DataGridTextColumn Header="Qty" Binding="{Binding QuantityAvailable}" Width="Auto" />
+                <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" Width="Auto" />
+                <DataGridTextColumn Header="Min" Binding="{Binding MinStock}" Width="Auto" />
+                <DataGridTextColumn Header="Max" Binding="{Binding MaxStock}" Width="Auto" />
+                <DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="2*" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" />
+                <DataGridTextColumn Header="Hazard" Binding="{Binding HazardClass}" Width="*" />
+                <DataGridTextColumn Header="Supplier" Binding="{Binding Supplier}" Width="*" />
+                <DataGridTextColumn Header="Exp."
+                                     Binding="{Binding ExpirationDate, StringFormat=\{0:yyyy-MM-dd\}}"
+                                     Width="Auto" />
+                <DataGridTextColumn Header="Last Move"
+                                     Binding="{Binding LastMovementDate, StringFormat=\{0:yyyy-MM-dd\}}"
+                                     Width="Auto" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- BOTONES -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,10,0,0">
+            <Button Content="Add item"
+                    Width="100"
+                    Margin="0,0,10,0"
+                    Click="AddItem_Click" />
+            <Button Content="Edit"
+                    Width="100"
+                    Margin="0,0,10,0"
+                    Click="EditItem_Click" />
+            <Button Content="Delete"
+                    Width="100"
+                    Click="DeleteItem_Click" />
+        </StackPanel>
+    </Grid>
+</UserControl>
