@@ -95,8 +95,8 @@ namespace ProjectReport.Services
                 if (cur.OD <= 0.001)
                 {
                     string odMessage = cur.SectionType == WellboreSectionType.OpenHole 
-                        ? "OD no puede ser 0.000. Para OpenHole, ingrese el diámetro del hoyo perforado (Hole Diameter)"
-                        : "OD no puede ser 0.000. Ingrese el diámetro exterior de la tubería";
+                        ? "Error A5: OD cannot be 0.000. For OpenHole, enter the Hole Diameter (in)."
+                        : "Error A5: OD cannot be 0.000. Enter the outer diameter of the pipe.";
                     result.Items.Add(new ValidationError { ComponentId = cur.Id.ToString(), ComponentName = cur.Name, Message = odMessage, Severity = ValidationSeverity.Error });
                 }
 
@@ -147,7 +147,13 @@ namespace ProjectReport.Services
                 {
                     if (cur.OD >= prev.ID)
                     {
-                        result.Items.Add(new ValidationError { ComponentId = cur.Id.ToString(), ComponentName = cur.Name, Message = "Invalid Geometry: OD must be smaller than previous section ID.", Severity = ValidationSeverity.Error });
+                        result.Items.Add(new ValidationError 
+                        { 
+                            ComponentId = cur.Id.ToString(), 
+                            ComponentName = cur.Name, 
+                            Message = $"Error A2: El Diámetro Exterior (OD={cur.OD:F3} in) o Diámetro del Hoyo es mayor o igual que el Diámetro Interior (ID={prev.ID:F3} in) de la sección superior. El pozo no cumple la progresión telescópica.", 
+                            Severity = ValidationSeverity.Error 
+                        });
                     }
                 }
 
@@ -213,26 +219,26 @@ namespace ProjectReport.Services
                         { 
                             ComponentId = cur.Id.ToString(), 
                             ComponentName = cur.Name, 
-                            Message = "Bottom MD cannot be less than previous casing depth.", 
+                            Message = "Error D3: El Bottom MD de una sección de revestimiento anidada no puede ser menor que el Bottom MD de la sección superior inmediata.", 
                             Severity = ValidationSeverity.Error 
                         });
                     }
                 }
 
-                // C4: OpenHole Washout Requerido (MANDATORY - Hard Error)
+                // C3/C4: OpenHole Washout Requerido (MANDATORY - Hard Error)
                 if (cur.SectionType == WellboreSectionType.OpenHole)
                 {
                     if (double.IsNaN(cur.Washout) || cur.Washout < 0)
                     {
-                         result.Items.Add(new ValidationError { ComponentId = cur.Id.ToString(), ComponentName = cur.Name, Message = "Washout is required for Open Hole volume calculation.", Severity = ValidationSeverity.Error });
+                         result.Items.Add(new ValidationError { ComponentId = cur.Id.ToString(), ComponentName = cur.Name, Message = "Error C4: Washout is required for Open Hole volume calculation.", Severity = ValidationSeverity.Error });
                     }
                     else if (cur.Washout > 50)
                     {
-                         result.Items.Add(new ValidationError { ComponentId = cur.Id.ToString(), ComponentName = cur.Name, Message = "Washout value exceeds reasonable range (0-50%). Typical values: 5-25%", Severity = ValidationSeverity.Error });
+                         result.Items.Add(new ValidationError { ComponentId = cur.Id.ToString(), ComponentName = cur.Name, Message = "Error C4: Washout value exceeds reasonable range (0-50%). Typical values: 5-25%", Severity = ValidationSeverity.Error });
                     }
-                    else if (cur.Washout == 0)
+                    else if (cur.Washout < 0.01)
                     {
-                         result.Items.Add(new ValidationError { ComponentId = cur.Id.ToString(), ComponentName = cur.Name, Message = "Washout of 0% in OpenHole is uncommon. Typical values: 5-25%. Is this correct?", Severity = ValidationSeverity.Warning });
+                         result.Items.Add(new ValidationError { ComponentId = cur.Id.ToString(), ComponentName = cur.Name, Message = "Validación C3: Mínimo W ≥ 0.01%. Advertencia: Washout de 0% en OpenHole es poco común. Valores típicos: 5-25%. ¿Es correcto?", Severity = ValidationSeverity.Warning });
                     }
                 }
 

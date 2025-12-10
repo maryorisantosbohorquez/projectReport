@@ -439,6 +439,8 @@ namespace ProjectReport.Models.Geometry.Wellbore
 
         /// <summary>
         /// Validates washout for OpenHole sections
+        /// Rule C3: Minimum washout >= 0.01%
+        /// Rule C4: Washout is mandatory for OpenHole
         /// </summary>
         private void ValidateWashout()
         {
@@ -449,13 +451,22 @@ namespace ProjectReport.Models.Geometry.Wellbore
                 // Washout is mandatory for OpenHole
                 if (double.IsNaN(Washout) || Washout < 0)
                 {
-                    AddError(nameof(Washout), "Washout is required for Open Hole volume calculation.");
+                    AddError(nameof(Washout), "Error C4: Washout is required for Open Hole volume calculation.");
+                }
+                else if (Washout > 50)
+                {
+                    AddError(nameof(Washout), "Error C4: Washout value exceeds reasonable range (0-50%). Typical values: 5-25%.");
+                }
+                else if (Washout < 0.01)
+                {
+                    AddError(nameof(Washout), "Validación C3: Mínimo W ≥ 0.01%. Washout de 0% en OpenHole es poco común. Valores típicos: 5-25%.");
                 }
             }
         }
 
         /// <summary>
         /// Validates telescopic diameter rule: OD[n] < ID[n-1]
+        /// Rule A2: Telescopic Diameter Progression
         /// This should be called from the ViewModel with the previous component
         /// </summary>
         public void ValidateTelescopicDiameter(WellboreComponent? previousComponent)
@@ -464,15 +475,16 @@ namespace ProjectReport.Models.Geometry.Wellbore
             
             if (previousComponent == null) return; // First component, no telescoping check
             
-            // Rule: OD[n] < ID[n-1] (Telescopic Diameter)
+            // Rule A2: OD[n] < ID[n-1] (Telescopic Diameter)
             if (OD >= previousComponent.ID && previousComponent.ID > 0.001)
             {
-                AddError(nameof(OD), "Invalid Geometry: OD must be smaller than previous section ID.");
+                AddError(nameof(OD), $"Error A2: OD ({OD:F3} in) must be smaller than previous section ID ({previousComponent.ID:F3} in). Telescopic progression required.");
             }
         }
 
         /// <summary>
         /// Validates casing depth progression: BottomMD[n] >= BottomMD[n-1] for casing/liner
+        /// Rule D3: Casing Depth Progression
         /// </summary>
         public void ValidateCasingDepthProgression(WellboreComponent? previousComponent)
         {
@@ -487,7 +499,7 @@ namespace ProjectReport.Models.Geometry.Wellbore
                 
                 if (!isCasingOverride && BottomMD < previousComponent.BottomMD)
                 {
-                    AddError(nameof(BottomMD), $"Bottom MD cannot be less than previous casing depth.");
+                    AddError(nameof(BottomMD), $"Error D3: Bottom MD ({BottomMD:F2} ft) cannot be less than previous casing depth ({previousComponent.BottomMD:F2} ft).");
                 }
             }
         }

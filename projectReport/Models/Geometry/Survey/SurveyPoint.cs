@@ -1,4 +1,5 @@
 using ProjectReport.Models;
+using System.Linq;
 
 namespace ProjectReport.Models.Geometry.Survey
 {
@@ -127,7 +128,7 @@ namespace ProjectReport.Models.Geometry.Survey
             ClearErrors(nameof(MD));
             if (MD < TVD)
             {
-                AddError(nameof(MD), "MD must be greater than or equal to TVD");
+                AddError(nameof(MD), $"Error S2: TVD ({TVD:F2} ft) exceeds MD ({MD:F2} ft). This is physically impossible.");
             }
         }
 
@@ -136,7 +137,7 @@ namespace ProjectReport.Models.Geometry.Survey
             ClearErrors(nameof(TVD));
             if (TVD > MD)
             {
-                AddError(nameof(TVD), "TVD cannot be greater than MD");
+                AddError(nameof(TVD), $"Error S2: TVD ({TVD:F2} ft) exceeds MD ({MD:F2} ft). This is physically impossible.");
             }
             // Trigger MD validation as well since they are related
             ValidateMD();
@@ -145,26 +146,57 @@ namespace ProjectReport.Models.Geometry.Survey
         private void ValidateHoleAngle()
         {
             ClearErrors(nameof(HoleAngle));
-            if (HoleAngle > 93)
+            if (HoleAngle > 93 || HoleAngle < 0)
             {
-                AddError(nameof(HoleAngle), "Hole Angle cannot be greater than 93°");
-            }
-            if (HoleAngle < 0)
-            {
-                AddError(nameof(HoleAngle), "Hole Angle cannot be negative");
+                AddError(nameof(HoleAngle), $"Error S3: Hole Angle ({HoleAngle:F2}°) is outside valid measurement range (0° - 93°).");
             }
         }
 
         private void ValidateAzimuth()
         {
             ClearErrors(nameof(Azimuth));
-            if (Azimuth > 360)
+            if (Azimuth > 360 || Azimuth < 0)
             {
-                AddError(nameof(Azimuth), "Azimuth cannot be greater than 360°");
+                AddError(nameof(Azimuth), $"Error S3: Azimuth ({Azimuth:F2}°) is outside valid measurement range (0° - 360°).");
             }
-            if (Azimuth < 0)
+        }
+
+        /// <summary>
+        /// Validates depth progression against previous survey point
+        /// Rule S1: MD[i] >= MD[i-1] AND TVD[i] >= TVD[i-1]
+        /// The well cannot go backwards in depth
+        /// </summary>
+        public void ValidateDepthProgression(SurveyPoint? previousPoint)
+        {
+            if (previousPoint == null) return; // First point, no validation needed
+            
+            // S1: MD progression
+            if (MD < previousPoint.MD)
             {
-                AddError(nameof(Azimuth), "Azimuth cannot be negative");
+                AddError(nameof(MD), $"Error S1: MD ({MD:F2} ft) cannot be less than previous survey point ({previousPoint.MD:F2} ft). The well cannot go backwards in depth.");
+            }
+            
+            // S1: TVD progression
+            if (TVD < previousPoint.TVD)
+            {
+                AddError(nameof(TVD), $"Error S1: TVD ({TVD:F2} ft) cannot be less than previous survey point ({previousPoint.TVD:F2} ft). The well cannot go backwards in depth.");
+            }
+        }
+
+        /// <summary>
+        /// Gets the first validation error message for display in UI
+        /// </summary>
+        public string ValidationMessage
+        {
+            get
+            {
+                var errors = GetErrors(null);
+                if (errors != null)
+                {
+                    var errorList = errors.Cast<string>().ToList();
+                    return errorList.Count > 0 ? errorList[0] : string.Empty;
+                }
+                return string.Empty;
             }
         }
 

@@ -11,6 +11,7 @@ using LiveCharts.Defaults;
 using Microsoft.Win32;
 using ProjectReport.Models.Geometry.ThermalGradient;
 using ProjectReport.Services;
+using System.Windows.Media;
 
 namespace ProjectReport.ViewModels.Geometry
 {
@@ -19,6 +20,8 @@ namespace ProjectReport.ViewModels.Geometry
         private readonly ThermalGradientService _thermalService;
         private readonly ThermalGradientImportService _importService;
         private int _nextId = 1;
+        private const double SurfaceTempMin = 32.0;
+        private const double SurfaceTempMax = 120.0;
 
         public ThermalGradientViewModel(ThermalGradientService thermalService)
         {
@@ -38,6 +41,15 @@ namespace ProjectReport.ViewModels.Geometry
                     PointGeometry = DefaultGeometries.Circle,
                     PointGeometrySize = 10,
                     LineSmoothness = 0
+                },
+                new LineSeries
+                {
+                    Title = "Regression",
+                    Values = new ChartValues<ObservablePoint>(),
+                    StrokeDashArray = new System.Windows.Media.DoubleCollection { 4, 2 },
+                    Fill = System.Windows.Media.Brushes.Transparent,
+                    PointGeometry = null,
+                    LineSmoothness = 0
                 }
             };
 
@@ -51,7 +63,7 @@ namespace ProjectReport.ViewModels.Geometry
             AutoSortCommand = new RelayCommand(_ => AutoSortPoints());
             ImportDataCommand = new RelayCommand(_ => ImportData());
             ExportDataCommand = new RelayCommand(_ => ExportData());
-            ImportFromSurveyCommand = new RelayCommand(_ => ImportFromSurvey());
+            ImportFromSurveyCommand = new RelayCommand(_ => ImportFromSurvey(), _ => CanImportFromSurvey);
         }
 
         #region Properties
@@ -90,6 +102,20 @@ namespace ProjectReport.ViewModels.Geometry
             set => SetProperty(ref _averageGradient, value);
         }
 
+        private double _regressionSlope;
+        public double RegressionSlope
+        {
+            get => _regressionSlope;
+            set => SetProperty(ref _regressionSlope, value);
+        }
+
+        private double _regressionIntercept;
+        public double RegressionIntercept
+        {
+            get => _regressionIntercept;
+            set => SetProperty(ref _regressionIntercept, value);
+        }
+
         private int _dataPointsCount;
         public int DataPointsCount
         {
@@ -121,9 +147,26 @@ namespace ProjectReport.ViewModels.Geometry
                 {
                     ValidateAllPoints();
                     RecalculateSummaryStatistics();
+                    OnPropertyChanged(nameof(CanImportFromSurvey));
                 }
             }
         }
+
+        private bool _hasSurveyData;
+        public bool HasSurveyData
+        {
+            get => _hasSurveyData;
+            set
+            {
+                if (SetProperty(ref _hasSurveyData, value))
+                {
+                    OnPropertyChanged(nameof(CanImportFromSurvey));
+                    System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                }
+            }
+        }
+
+        public bool CanImportFromSurvey => HasSurveyData && MaxWellboreTVD > 0;
 
         // Nueva propiedad calculada requerida por el código existente
         public bool ShowChart => ThermalGradientPoints.Count >= 2 && !HasValidationError;
@@ -248,8 +291,17 @@ namespace ProjectReport.ViewModels.Geometry
 
         private void ImportFromSurvey()
         {
-            // Placeholder
-            ToastNotificationService.Instance.ShowInfo("Survey integration: This will import TVD values from Survey module and create thermal gradient rows automatically. User will then enter temperature values.");
+            if (!CanImportFromSurvey)
+            {
+                ToastNotificationService.Instance.ShowWarning("Advertencia: Imposible importar TVD. Complete el módulo Survey primero.");
+                return;
+            }
+
+            var newPoint = new ThermalGradientPoint(_nextId++, MaxWellboreTVD, 0.0);
+            newPoint.PropertyChanged += OnThermalPointPropertyChanged;
+            ThermalGradientPoints.Add(newPoint);
+
+            ToastNotificationService.Instance.ShowInfo($"TVD máxima del survey importada ({MaxWellboreTVD:F2} ft). Ingrese la temperatura.");
         }
 
         #endregion
@@ -322,6 +374,14 @@ namespace ProjectReport.ViewModels.Geometry
             var gradientWarnings = _thermalService.ValidateTemperatureGradient(ThermalGradientPoints.ToList());
             errors.AddRange(gradientWarnings);
 
+            // Surface temperature reasonableness (T4 surface check)
+            var surfacePoint = ThermalGradientPoints.OrderBy(p => p.TVD).FirstOrDefault();
+            var surfaceWarning = surfacePoint != null ? _thermalService.ValidateSurfaceTemperature(surfacePoint) : null;
+            if (!string.IsNullOrEmpty(surfaceWarning))
+            {
+                errors.Add(surfaceWarning);
+            }
+
             // BR-TG-004: Minimum Data Points
             if (ThermalGradientPoints.Count < 2)
             {
@@ -357,6 +417,8 @@ namespace ProjectReport.ViewModels.Geometry
                 BottomHoleTemperature = 0;
                 TemperatureRange = 0;
                 AverageGradient = 0;
+                RegressionSlope = 0;
+                RegressionIntercept = 0;
                 OnPropertyChanged(nameof(ShowChart));
                 return;
             }
@@ -365,24 +427,18 @@ namespace ProjectReport.ViewModels.Geometry
 
             SurfaceTemperature = sortedPoints.First().Temperature;
             
-            // Calculate bottom hole temperature using formula:
-            // bottom_hole_temperature = (total_wellbore_depth * gradient) / 100 + ambient_temperature
-            if (sortedPoints.Count >= 2 && MaxWellboreTVD > 0)
-            {
-                var gradient = _thermalService.CalculateAverageGradient(sortedPoints);
-                BottomHoleTemperature = (MaxWellboreTVD * gradient) / 100 + SurfaceTemperature;
-            }
-            else
-            {
-                BottomHoleTemperature = sortedPoints.Last().Temperature;
-            }
-            
-            TemperatureRange = BottomHoleTemperature - SurfaceTemperature;
-
             if (sortedPoints.Count >= 2)
             {
-                AverageGradient = _thermalService.CalculateAverageGradient(sortedPoints);
-                
+                var (slope, intercept) = _thermalService.ComputeLinearRegression(sortedPoints);
+                RegressionSlope = slope;
+                RegressionIntercept = intercept;
+
+                double targetTvd = MaxWellboreTVD > 0 ? MaxWellboreTVD : sortedPoints.Last().TVD;
+                BottomHoleTemperature = slope * targetTvd + intercept;
+
+                TemperatureRange = BottomHoleTemperature - SurfaceTemperature;
+                AverageGradient = slope * 100.0; // °F per 100 ft
+
                 // Calculate segment gradients
                 var segments = _thermalService.CalculateSegmentGradients(sortedPoints);
                 SegmentGradients.Clear();
@@ -396,7 +452,11 @@ namespace ProjectReport.ViewModels.Geometry
             }
             else
             {
+                BottomHoleTemperature = sortedPoints.Last().Temperature;
+                TemperatureRange = BottomHoleTemperature - SurfaceTemperature;
                 AverageGradient = 0;
+                RegressionSlope = 0;
+                RegressionIntercept = 0;
                 SegmentGradients.Clear();
                 TemperatureZones = string.Empty;
             }
@@ -441,6 +501,21 @@ namespace ProjectReport.ViewModels.Geometry
                 }
 
                 SeriesCollection[0].Values = values;
+
+                // Regression line
+                if (SeriesCollection.Count > 1)
+                {
+                    var regValues = new ChartValues<ObservablePoint>();
+                    if (ThermalGradientPoints.Count >= 2)
+                    {
+                        double startTemp = RegressionIntercept; // at TVD = 0
+                        double endTemp = RegressionSlope * (MaxWellboreTVD > 0 ? MaxWellboreTVD : ThermalGradientPoints.Max(p => p.TVD)) + RegressionIntercept;
+                        double endTvd = MaxWellboreTVD > 0 ? MaxWellboreTVD : ThermalGradientPoints.Max(p => p.TVD);
+                        regValues.Add(new ObservablePoint(startTemp, 0));
+                        regValues.Add(new ObservablePoint(endTemp, -endTvd));
+                    }
+                    SeriesCollection[1].Values = regValues;
+                }
             }
         }
 

@@ -128,95 +128,101 @@
 
             <!-- Data Table -->
             <GroupBox Grid.Column="0" Header="Thermal Gradient Data" Padding="10">
-                <DataGrid x:Name="ThermalDataGrid" 
-                         ItemsSource="{Binding ThermalGradientPoints}"
-                         AutoGenerateColumns="False"
-                         CanUserAddRows="False"
-                         CanUserDeleteRows="False"
-                         SelectionMode="Single"
-                         CanUserReorderColumns="False"
-                         GridLinesVisibility="Horizontal"
-                         AlternatingRowBackground="#F9F9F9">
-                    <DataGrid.Columns>
-                        <!-- ID Column (Read-only) -->
-                        <DataGridTextColumn Header="ID" 
-                                           Binding="{Binding Id}" 
-                                           Width="60" 
-                                           IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#808080"/>
-                                    <Setter Property="FontStyle" Value="Italic"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="Bottom Hole Temperature (BHT): " FontSize="14" FontWeight="Bold" Foreground="DarkOrange"/>
+                        <TextBlock Text="{Binding BottomHoleTemperature, StringFormat='{}{0:F1} °F'}" FontSize="14" FontWeight="Bold" Foreground="DarkOrange"/>
+                    </StackPanel>
+                    <DataGrid x:Name="ThermalDataGrid" 
+                             ItemsSource="{Binding ThermalGradientPoints}"
+                             AutoGenerateColumns="False"
+                             CanUserAddRows="False"
+                             CanUserDeleteRows="False"
+                             SelectionMode="Single"
+                             CanUserReorderColumns="False"
+                             GridLinesVisibility="Horizontal"
+                             AlternatingRowBackground="#F9F9F9">
+                        <DataGrid.Columns>
+                            <!-- ID Column (Read-only) -->
+                            <DataGridTextColumn Header="ID" 
+                                               Binding="{Binding Id}" 
+                                               Width="60" 
+                                               IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#808080"/>
+                                        <Setter Property="FontStyle" Value="Italic"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
-                        <!-- TVD Column -->
-                        <DataGridTextColumn Header="TVD (ft)" 
-                                           Binding="{Binding TVD, StringFormat=F2, UpdateSourceTrigger=PropertyChanged}" 
-                                           Width="120">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HasValidationWarning}" Value="True">
-                                            <Setter Property="Background" Value="#FFF3CD"/>
-                                            <Setter Property="Foreground" Value="#856404"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            <!-- TVD Column -->
+                            <DataGridTextColumn Header="TVD (ft)" 
+                                               Binding="{Binding TVD, StringFormat=F2, UpdateSourceTrigger=PropertyChanged}" 
+                                               Width="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasValidationWarning}" Value="True">
+                                                <Setter Property="Background" Value="#FFF3CD"/>
+                                                <Setter Property="Foreground" Value="#856404"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
-                        <!-- Temperature Column -->
-                        <DataGridTextColumn Header="Temperature (°F)" 
-                                           Binding="{Binding Temperature, StringFormat=F1, UpdateSourceTrigger=PropertyChanged}" 
-                                           Width="140">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HasValidationWarning}" Value="True">
-                                            <Setter Property="Background" Value="#FFF3CD"/>
-                                            <Setter Property="Foreground" Value="#856404"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            <!-- Temperature Column -->
+                            <DataGridTextColumn Header="Temperature (°F)" 
+                                               Binding="{Binding Temperature, StringFormat=F1, UpdateSourceTrigger=PropertyChanged}" 
+                                               Width="140">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasValidationWarning}" Value="True">
+                                                <Setter Property="Background" Value="#FFF3CD"/>
+                                                <Setter Property="Foreground" Value="#856404"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
-                        <!-- Validation Message Column -->
-                        <DataGridTextColumn Header="Notes" 
-                                           Binding="{Binding ValidationMessage}" 
-                                           Width="*" 
-                                           IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#FF8C00"/>
-                                    <Setter Property="FontSize" Value="11"/>
-                                    <Setter Property="TextWrapping" Value="Wrap"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                            <!-- Validation Message Column -->
+                            <DataGridTextColumn Header="Notes" 
+                                               Binding="{Binding ValidationMessage}" 
+                                               Width="*" 
+                                               IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#FF8C00"/>
+                                        <Setter Property="FontSize" Value="11"/>
+                                        <Setter Property="TextWrapping" Value="Wrap"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
-                        <!-- Actions Column -->
-                        <DataGridTemplateColumn Header="Actions" Width="80">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="×" 
-                                           Command="{Binding DataContext.DeletePointCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                           CommandParameter="{Binding}"
-                                           Foreground="Red"
-                                           Background="Transparent"
-                                           BorderThickness="0"
-                                           FontSize="18"
-                                           FontWeight="Bold"
-                                           Padding="5,0"
-                                           Cursor="Hand"
-                                           ToolTip="Delete this point"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
+                            <!-- Actions Column -->
+                            <DataGridTemplateColumn Header="Actions" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="×" 
+                                               Command="{Binding DataContext.DeletePointCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               CommandParameter="{Binding}"
+                                               Foreground="Red"
+                                               Background="Transparent"
+                                               BorderThickness="0"
+                                               FontSize="18"
+                                               FontWeight="Bold"
+                                               Padding="5,0"
+                                               Cursor="Hand"
+                                               ToolTip="Delete this point"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
             </GroupBox>
 
             <!-- GridSplitter -->
