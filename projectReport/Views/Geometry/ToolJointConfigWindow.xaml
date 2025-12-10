@@ -33,9 +33,18 @@
                                FontSize="15"
                                Foreground="{DynamicResource AppSecondaryText}"
                                Margin="0,0,0,5"/>
-                    <TextBox Text="{Binding TJ_OD, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox x:Name="TJ_OD_TextBox"
+                             Text="{Binding TJ_OD, UpdateSourceTrigger=LostFocus}"
                              Height="35"
-                             Style="{StaticResource DefaultTextBox}"/>
+                             Padding="8,8"
+                             Foreground="#000000"
+                             Background="White"
+                             FontSize="14"
+                             BorderBrush="#DDDDDD"
+                             BorderThickness="1"
+                             VerticalContentAlignment="Center"
+                             GotFocus="TextBox_GotFocus"
+                             LostFocus="TextBox_LostFocus"/>
                 </StackPanel>
 
                 <StackPanel Margin="0 0 0 20">
@@ -43,9 +52,18 @@
                                FontSize="15"
                                Foreground="{DynamicResource AppSecondaryText}"
                                Margin="0,0,0,5"/>
-                    <TextBox Text="{Binding TJ_ID, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox x:Name="TJ_ID_TextBox"
+                             Text="{Binding TJ_ID, UpdateSourceTrigger=LostFocus}"
                              Height="35"
-                             Style="{StaticResource DefaultTextBox}"/>
+                             Padding="8,8"
+                             Foreground="#000000"
+                             Background="White"
+                             FontSize="14"
+                             BorderBrush="#DDDDDD"
+                             BorderThickness="1"
+                             VerticalContentAlignment="Center"
+                             GotFocus="TextBox_GotFocus"
+                             LostFocus="TextBox_LostFocus"/>
                 </StackPanel>
 
                 <StackPanel Margin="0 0 0 20">
@@ -53,19 +71,18 @@
                                FontSize="15"
                                Foreground="{DynamicResource AppSecondaryText}"
                                Margin="0,0,0,5"/>
-                    <TextBox Text="{Binding TJ_Length, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox x:Name="TJ_Length_TextBox"
+                             Text="{Binding TJ_Length, UpdateSourceTrigger=LostFocus}"
                              Height="35"
-                             Style="{StaticResource DefaultTextBox}"/>
-                </StackPanel>
-
-                <StackPanel Margin="0 0 0 20" Visibility="{Binding ShowToolIDLength, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TextBlock Text="Tool ID Length (ft)"
-                               FontSize="15"
-                               Foreground="{DynamicResource AppSecondaryText}"
-                               Margin="0,0,0,5"/>
-                    <TextBox Text="{Binding TJ_ID_Length, UpdateSourceTrigger=PropertyChanged}"
-                             Height="35"
-                             Style="{StaticResource DefaultTextBox}"/>
+                             Padding="8,8"
+                             Foreground="#000000"
+                             Background="White"
+                             FontSize="14"
+                             BorderBrush="#DDDDDD"
+                             BorderThickness="1"
+                             VerticalContentAlignment="Center"
+                             GotFocus="TextBox_GotFocus"
+                             LostFocus="TextBox_LostFocus"/>
                 </StackPanel>
 
                 <StackPanel>
@@ -73,9 +90,18 @@
                                FontSize="15"
                                Foreground="{DynamicResource AppSecondaryText}"
                                Margin="0,0,0,5"/>
-                    <TextBox Text="{Binding Weight, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox x:Name="Weight_TextBox"
+                             Text="{Binding Weight, UpdateSourceTrigger=LostFocus}"
                              Height="35"
-                             Style="{StaticResource DefaultTextBox}"/>
+                             Padding="8,8"
+                             Foreground="#000000"
+                             Background="White"
+                             FontSize="14"
+                             BorderBrush="#DDDDDD"
+                             BorderThickness="1"
+                             VerticalContentAlignment="Center"
+                             GotFocus="TextBox_GotFocus"
+                             LostFocus="TextBox_LostFocus"/>
                 </StackPanel>
 
             </StackPanel>

@@ -152,7 +152,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource TableBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="{StaticResource WhiteBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource BlackBrush}"/>
+            <Setter Property="Foreground" Value="Black"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -162,7 +162,10 @@
                                 BorderThickness="{TemplateBinding BorderThickness}" 
                                 CornerRadius="4">
                             <ScrollViewer x:Name="PART_ContentHost" 
-                                         Margin="{TemplateBinding Padding}"/>
+                                         Margin="{TemplateBinding Padding}"
+                                         Focusable="False"
+                                         HorizontalScrollBarVisibility="Hidden"
+                                         VerticalScrollBarVisibility="Hidden"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>

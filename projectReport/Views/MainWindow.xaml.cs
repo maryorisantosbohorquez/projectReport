@@ -3,20 +3,26 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using System.Windows.Input; // 👈 IMPORTANTE para DragMove
+using System.Windows.Input;
 using ProjectReport.Services;
 using ProjectReport.Views;
 using ProjectReport.Models;
+using ProjectReport.Views.Geometry;
+using ProjectReport.Views.Inventory;
 
 namespace ProjectReport.Views
 {
     public partial class MainWindow : Window
     {
         private readonly DatabaseService _databaseService;
+
         private GeometryView? _geometryView;
         private HomeView? _homeView;
         private WellDataView? _wellDataView;
         private Views.WellDashboardView? _wellDashboardView;
+
+        // NUEVO: INVENTORY VIEW
+        private InventoryView? _inventoryView;
 
         public Project CurrentProject { get; set; }
 
@@ -24,42 +30,41 @@ namespace ProjectReport.Views
         {
             InitializeComponent();
 
-            // Initialize services
+            // Init services
             _databaseService = new DatabaseService();
 
-            // Initialize the current project
+            // Default project object (mock/demo)
             CurrentProject = new Project
             {
                 Name = "Y-23A",
                 WellName = "Well-04"
             };
 
-            // Set the data context
             DataContext = this;
 
-            // Subscribe to navigation events
+            // NavigationService event hookup
             NavigationService.Instance.NavigationRequested += OnNavigationRequested;
 
-            // Setup status updates
-            var timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
+            // Clock for footer
+            var timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
             timer.Tick += Timer_Tick;
             timer.Start();
 
-            UpdateStatus("Application initialized");
-            
-            // Start with Home view
+            // Start at Home
             NavigateToHome();
         }
 
-
         private void Timer_Tick(object? sender, EventArgs e)
         {
-            // Actualizar la hora en el status bar
             TimeText.Text = DateTime.Now.ToString("HH:mm:ss");
         }
 
-        #region Navigation
+        //==========================================
+        // NAVIGATION SYSTEM
+        //==========================================
 
         private void OnNavigationRequested(object? sender, NavigationEventArgs e)
         {
@@ -70,10 +75,12 @@ namespace ProjectReport.Views
                     case NavigationTarget.Home:
                         NavigateToHome();
                         break;
+
                     case NavigationTarget.WellData:
                         if (e.WellId.HasValue)
                             NavigateToWellData(e.WellId.Value);
                         break;
+
                     case NavigationTarget.Geometry:
                         if (e.WellId.HasValue)
                             NavigateToGeometry(e.WellId.Value);
@@ -88,67 +95,61 @@ namespace ProjectReport.Views
 
         private void NavigateToHome()
         {
-            // Save geometry data if coming from Geometry view
             SaveGeometryDataIfNeeded();
 
             if (_homeView == null)
             {
                 _homeView = new HomeView();
-                var viewModel = new ProjectReport.ViewModels.HomeViewModel(CurrentProject);
-                _homeView.DataContext = viewModel;
+                var vm = new ProjectReport.ViewModels.HomeViewModel(CurrentProject);
+                _homeView.DataContext = vm;
             }
 
             ContentTitle.Text = "Home";
             ContentArea.Content = _homeView;
-            UpdateStatus("Home View Loaded");
+
+            GeometrySubmenu.Visibility = Visibility.Collapsed;
+            GeometrySubmenu.Height = 0;
         }
 
         private void NavigateToWellData(int wellId)
         {
-            // Save geometry data if coming from Geometry view
             SaveGeometryDataIfNeeded();
 
             var well = CurrentProject.Wells.FirstOrDefault(w => w.Id == wellId);
             if (well == null)
-            {
-                UpdateStatus($"Well with ID {wellId} not found");
                 return;
-            }
 
             _wellDataView = new WellDataView();
-            var viewModel = new ProjectReport.ViewModels.WellDataViewModel(CurrentProject);
-            viewModel.LoadWell(well);
-            _wellDataView.DataContext = viewModel;
+            var vm = new ProjectReport.ViewModels.WellDataViewModel(CurrentProject);
+            vm.LoadWell(well);
+            _wellDataView.DataContext = vm;
 
             ContentTitle.Text = $"Well Data - {well.WellName}";
             ContentArea.Content = _wellDataView;
-            UpdateStatus($"Well Data Module Loaded for {well.WellName}");
+
+            GeometrySubmenu.Visibility = Visibility.Collapsed;
+            GeometrySubmenu.Height = 0;
         }
 
         private void NavigateToGeometry(int wellId)
         {
             var well = CurrentProject.Wells.FirstOrDefault(w => w.Id == wellId);
             if (well == null)
-            {
-                UpdateStatus($"Well with ID {wellId} not found");
                 return;
-            }
 
             if (_geometryView == null)
-            {
                 _geometryView = new GeometryView();
-            }
 
-            if (_geometryView.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel viewModel)
-            {
-                viewModel.LoadWell(well);
-            }
+            if (_geometryView.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel vm)
+                vm.LoadWell(well);
 
             ContentTitle.Text = $"Geometry - {well.WellName}";
             ContentArea.Content = _geometryView;
-            UpdateStatus($"Geometry Module Loaded for {well.WellName}");
+
+            GeometrySubmenu.Visibility = Visibility.Visible;
         }
 
+<<<<<<< HEAD
         private void NavigateToWellDashboard(int wellId)
         {
             var well = CurrentProject.Wells.FirstOrDefault(w => w.Id == wellId);
@@ -169,177 +170,128 @@ namespace ProjectReport.Views
         }
 
         #endregion
+=======
+        //==========================================
+        //  INVENTORY NAVIGATION (BOTÓN NUEVO)
+        //==========================================
+>>>>>>> 663420e4de4a240da11e20e9186403ee096c7896
 
-        /// <summary>
-        /// Saves geometry data back to the Well object if currently viewing Geometry module
-        /// </summary>
-        private void SaveGeometryDataIfNeeded()
+        private void InventoryButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_geometryView != null && _geometryView.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel viewModel)
+            SaveGeometryDataIfNeeded();
+
+            if (_inventoryView == null)
             {
-                viewModel.SaveToWell();
+                _inventoryView = new InventoryView();
             }
+
+            ContentTitle.Text = "Inventory";
+            ContentArea.Content = _inventoryView;
+
+            GeometrySubmenu.Visibility = Visibility.Collapsed;
+            GeometrySubmenu.Height = 0;
         }
+
+        //==========================================
+        // GEOMETRY SUB-PAGES
+        //==========================================
 
         private GeometryView GetOrCreateGeometryView()
         {
             if (_geometryView == null)
-            {
                 _geometryView = new GeometryView();
-            }
+
             return _geometryView;
         }
 
         private void WellboreGeometryButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                ContentTitle.Text = "Wellbore Geometry";
-                var view = GetOrCreateGeometryView();
-                if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel viewModel)
-                {
-                    viewModel.SelectedTabIndex = 0;
-                }
-                ContentArea.Content = view;
-                UpdateStatus("Wellbore Geometry Module Loaded");
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"Error: {ex.Message}");
-                MessageBox.Show($"Failed to load Wellbore Geometry Module: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            ContentTitle.Text = "Wellbore Geometry";
+            var view = GetOrCreateGeometryView();
+
+            if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel vm)
+                vm.SelectedTabIndex = 0;
+
+            ContentArea.Content = view;
         }
 
         private void DrillStringGeometryButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                ContentTitle.Text = "Drill String Geometry";
-                var view = GetOrCreateGeometryView();
-                if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel viewModel)
-                {
-                    viewModel.SelectedTabIndex = 1;
-                }
-                ContentArea.Content = view;
-                UpdateStatus("Drill String Geometry Module Loaded");
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"Error: {ex.Message}");
-                MessageBox.Show($"Failed to load Drill String Geometry Module: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            ContentTitle.Text = "Drill String Geometry";
+            var view = GetOrCreateGeometryView();
+
+            if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel vm)
+                vm.SelectedTabIndex = 1;
+
+            ContentArea.Content = view;
         }
 
         private void SurveyButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                ContentTitle.Text = "Survey";
-                var view = GetOrCreateGeometryView();
-                if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel viewModel)
-                {
-                    viewModel.SelectedTabIndex = 2;
-                }
-                ContentArea.Content = view;
-                UpdateStatus("Survey Module Loaded");
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"Error: {ex.Message}");
-                MessageBox.Show($"Failed to load Survey Module: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+            ContentTitle.Text = "Survey";
+            var view = GetOrCreateGeometryView();
 
-        private void WellTestButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                ContentTitle.Text = "Well Test";
-                var view = GetOrCreateGeometryView();
-                if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel viewModel)
-                {
-                    viewModel.SelectedTabIndex = 4;
-                }
-                ContentArea.Content = view;
-                UpdateStatus("Well Test Module Loaded");
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"Error: {ex.Message}");
-                MessageBox.Show($"Failed to load Well Test Module: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+            if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel vm)
+                vm.SelectedTabIndex = 2;
 
-        private void SummaryButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                ContentTitle.Text = "Summary";
-                var view = GetOrCreateGeometryView();
-                if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel viewModel)
-                {
-                    viewModel.SelectedTabIndex = 5;
-                }
-                ContentArea.Content = view;
-                UpdateStatus("Summary Module Loaded");
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"Error: {ex.Message}");
-                MessageBox.Show($"Failed to load Summary Module: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            ContentArea.Content = view;
         }
 
         private void ThermalGradientButton_Click(object sender, RoutedEventArgs e)
         {
-            try
+            ContentTitle.Text = "Thermal Gradient";
+            var view = GetOrCreateGeometryView();
+
+            if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel vm)
+                vm.SelectedTabIndex = 3;
+
+            ContentArea.Content = view;
+        }
+
+        private void WellTestButton_Click(object sender, RoutedEventArgs e)
+        {
+            ContentTitle.Text = "Well Test";
+            var view = GetOrCreateGeometryView();
+
+            if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel vm)
+                vm.SelectedTabIndex = 4;
+
+            ContentArea.Content = view;
+        }
+
+        private void SummaryButton_Click(object sender, RoutedEventArgs e)
+        {
+            ContentTitle.Text = "Summary";
+            var view = GetOrCreateGeometryView();
+
+            if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel vm)
+                vm.SelectedTabIndex = 5;
+
+            ContentArea.Content = view;
+        }
+
+        //==========================================
+        // UTILS
+        //==========================================
+
+        private void SaveGeometryDataIfNeeded()
+        {
+            if (_geometryView != null &&
+                _geometryView.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel vm)
             {
-                ContentTitle.Text = "Thermal Gradient";
-                var view = GetOrCreateGeometryView();
-                if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel viewModel)
-                {
-                    viewModel.SelectedTabIndex = 3;
-                }
-                ContentArea.Content = view;
-                UpdateStatus("Thermal Gradient Module Loaded");
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"Error: {ex.Message}");
-                MessageBox.Show($"Failed to load Thermal Gradient Module: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                vm.SaveToWell();
             }
         }
 
         private void GeometryButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Toggle submenu visibility
-                GeometrySubmenu.Visibility = GeometrySubmenu.Visibility == Visibility.Visible 
-                    ? Visibility.Collapsed 
-                    : Visibility.Visible;
-                
-                ContentTitle.Text = "Geometry";
-                var view = GetOrCreateGeometryView();
-                if (view.DataContext is ProjectReport.ViewModels.Geometry.GeometryViewModel viewModel)
-                {
-                    viewModel.SelectedTabIndex = 0;
-                }
-                ContentArea.Content = view;
-                UpdateStatus("Geometry Module Loaded");
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"Error: {ex.Message}");
-                MessageBox.Show($"Failed to load Geometry Module: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            GeometrySubmenu.Visibility =
+                GeometrySubmenu.Visibility == Visibility.Visible
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            ContentTitle.Text = "Geometry";
+            ContentArea.Content = GetOrCreateGeometryView();
         }
 
         private void HomeButton_Click(object sender, RoutedEventArgs e)
@@ -347,23 +299,9 @@ namespace ProjectReport.Views
             NavigateToHome();
         }
 
-        private void UpdateStatus(string message)
-        {
-           
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            // Unsubscribe from navigation events
-            NavigationService.Instance.NavigationRequested -= OnNavigationRequested;
-            
-            _databaseService?.Dispose();
-            base.OnClosed(e);
-        }
-
-        // =========================
-        //  BOTONES DE VENTANA + DRAG
-        // =========================
+        //==========================================
+        // WINDOW BUTTONS + DRAG
+        //==========================================
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -386,15 +324,17 @@ namespace ProjectReport.Views
         {
             if (e.ChangedButton == MouseButton.Left)
             {
-                try
-                {
-                    DragMove();
-                }
-                catch
-                {
-                    // Ignorar si el sistema no permite arrastrar en ese momento
-                }
+                try { DragMove(); }
+                catch { }
             }
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            NavigationService.Instance.NavigationRequested -= OnNavigationRequested;
+            _databaseService?.Dispose();
+
+            base.OnClosed(e);
         }
     }
 }

@@ -114,6 +114,7 @@ namespace ProjectReport.Models.Geometry.DrillString
                 _componentType = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ComponentTypeString));
+                OnPropertyChanged(nameof(IsConfigEnabled));
 
                 // ✅ Only Bit keeps jets
                 if (value != ComponentType.Bit)
@@ -315,6 +316,10 @@ namespace ProjectReport.Models.Geometry.DrillString
             get => _isHighlighted;
             set => SetProperty(ref _isHighlighted, value);
         }
+
+        // UI Helper property to indicate if Config button should be enabled
+        [Newtonsoft.Json.JsonIgnore]
+        public bool IsConfigEnabled => ComponentType != ComponentType.DC;
 
         public DrillStringComponent()
         {
