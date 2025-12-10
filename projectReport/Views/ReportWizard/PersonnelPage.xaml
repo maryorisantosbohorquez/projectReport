@@ -70,7 +70,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid Margin="0,4">
-                                        <Grid.ColumnDefinitions>
+                                        <Grid.ColumnDefinitions>m
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>

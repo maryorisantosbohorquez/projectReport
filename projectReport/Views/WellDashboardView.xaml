@@ -4,10 +4,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:ProjectReport.Views"
-             mc:Ignorable="d">
+             mc:Ignorable="d"
+             Background="White">
+
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
-        <BooleanToVisibilityConverter x:Key="InverseBoolToVis" /> <!-- Needs a real inverse converter, or just use triggers -->
+        <BooleanToVisibilityConverter x:Key="InverseBoolToVis" />
         <Style x:Key="ReportsGridStyle" TargetType="Border">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding ReportsEmpty}" Value="True">
@@ -25,7 +27,8 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="8">
+    <!-- Fondo blanco para tapar el gris del MainWindow -->
+    <Grid Margin="8" Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /> <!-- Breadcrumbs -->
             <RowDefinition Height="*" />    <!-- Content -->
@@ -33,112 +36,187 @@
 
         <!-- Breadcrumbs -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
-            <Button Content="Home" Command="{Binding NavigateHomeCommand}" FontSize="14" Foreground="#007BFF" Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"/>
-            <TextBlock Text=" > " FontSize="14" Foreground="Gray" Margin="5,0"/>
-            <TextBlock Text="{Binding CurrentWell.WellName}" FontSize="14" FontWeight="SemiBold"/>
+            <Button Content="Home"
+                    Command="{Binding NavigateHomeCommand}"
+                    FontSize="14"
+                    Foreground="#007BFF"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="0"
+                    Cursor="Hand"/>
+            <TextBlock Text=" > "
+                       FontSize="14"
+                       Foreground="Gray"
+                       Margin="5,0"/>
+            <TextBlock Text="{Binding CurrentWell.WellName}"
+                       FontSize="14"
+                       FontWeight="SemiBold"/>
         </StackPanel>
 
-                <Grid Margin="0,10,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" /> <!-- Summary -->
-                        <RowDefinition Height="Auto" /> <!-- Stats -->
-                        <RowDefinition Height="*" />    <!-- Reports -->
-                    </Grid.RowDefinitions>
+        <!-- CONTENIDO PRINCIPAL -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" /> <!-- Summary -->
+                <RowDefinition Height="Auto" /> <!-- Stats -->
+                <RowDefinition Height="*" />    <!-- Reports -->
+            </Grid.RowDefinitions>
 
-                    <!-- Well Summary -->
-                    <Border Grid.Row="0" Background="White" CornerRadius="6" Padding="12" BorderBrush="#DDD" BorderThickness="1" Margin="0,0,0,8">
-                        <StackPanel>
-                            <TextBlock Text="{Binding CurrentWell.WellName}" FontSize="20" FontWeight="Bold" />
-                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                                <TextBlock Text="Field:" FontWeight="SemiBold" Margin="0,0,6,0" />
-                                <TextBlock Text="{Binding CurrentWell.Field}" Margin="0,0,12,0" />
-                                <TextBlock Text="Block:" FontWeight="SemiBold" Margin="0,0,6,0" />
-                                <TextBlock Text="{Binding CurrentWell.Block}" Margin="0,0,12,0" />
-                                <TextBlock Text="Operator:" FontWeight="SemiBold" Margin="0,0,6,0" />
-                                <TextBlock Text="{Binding CurrentWell.Operator}" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                <Button Content="Edit Well Data" Margin="0,0,8,0" Padding="8,4" Command="{Binding EditWellDataCommand}" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Quick Stats -->
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
-                        <Border Background="#FFF" Padding="8" Margin="0,0,8,0" CornerRadius="6" BorderBrush="#DDD" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="Total Reports" FontSize="11" Foreground="#666" />
-                                <TextBlock Text="{Binding Reports.Count}" FontSize="18" FontWeight="Bold" />
-                            </StackPanel>
-                        </Border>
-                        <Border Background="#FFF" Padding="8" Margin="0,0,8,0" CornerRadius="6" BorderBrush="#DDD" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="Last Report Date" FontSize="11" Foreground="#666" />
-                                <TextBlock Text="{Binding CurrentWell.LastReport.ReportDateTime, StringFormat=g}" FontSize="14" />
-                            </StackPanel>
-                        </Border>
-                        <Border Background="#FFF" Padding="8" Margin="0,0,8,0" CornerRadius="6" BorderBrush="#DDD" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="Current MD" FontSize="11" Foreground="#666" />
-                                <TextBlock Text="{Binding CurrentWell.TotalMD}" FontSize="14" />
-                            </StackPanel>
-                        </Border>
-                        <Border Background="#FFF" Padding="8" CornerRadius="6" BorderBrush="#DDD" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="Current Activity" FontSize="11" Foreground="#666" />
-                                <TextBlock Text="{Binding CurrentWell.CurrentOperation}" FontSize="14" />
-                            </StackPanel>
-                        </Border>
+            <!-- Well Summary -->
+            <Border Grid.Row="0"
+                    Background="White"
+                    CornerRadius="6"
+                    Padding="12"
+                    BorderBrush="#DDD"
+                    BorderThickness="1"
+                    Margin="0,0,0,8">
+                <StackPanel>
+                    <TextBlock Text="{Binding CurrentWell.WellName}"
+                               FontSize="20"
+                               FontWeight="Bold" />
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="Field:" FontWeight="SemiBold" Margin="0,0,6,0" />
+                        <TextBlock Text="{Binding CurrentWell.Field}" Margin="0,0,12,0" />
+                        <TextBlock Text="Block:" FontWeight="SemiBold" Margin="0,0,6,0" />
+                        <TextBlock Text="{Binding CurrentWell.Block}" Margin="0,0,12,0" />
+                        <TextBlock Text="Operator:" FontWeight="SemiBold" Margin="0,0,6,0" />
+                        <TextBlock Text="{Binding CurrentWell.Operator}" />
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Edit Well Data"
+                                Margin="0,0,8,0"
+                                Padding="8,4"
+                                Command="{Binding EditWellDataCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
-                    <!-- Reports Section -->
-                    <Grid Grid.Row="2">
-                        <!-- Empty State -->
-                        <Border Style="{StaticResource EmptyStateStyle}" Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="6" Padding="20">
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <!-- Icon placeholder -->
-                                <TextBlock Text="📄" FontSize="48" HorizontalAlignment="Center" Foreground="#CCC" Margin="0,0,0,16" />
-                                <TextBlock Text="No reports yet for this well" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,8" />
-                                <Button Content="Create First Report" Background="#FFA500" Foreground="White" Padding="16,8" Command="{Binding NewReportCommand}" HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
+            <!-- Quick Stats -->
+            <StackPanel Grid.Row="1"
+                        Orientation="Horizontal"
+                        Margin="0,0,0,8">
+                <Border Background="#FFF" Padding="8" Margin="0,0,8,0" CornerRadius="6" BorderBrush="#DDD" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Total Reports" FontSize="11" Foreground="#666" />
+                        <TextBlock Text="{Binding Reports.Count}" FontSize="18" FontWeight="Bold" />
+                    </StackPanel>
+                </Border>
+                <Border Background="#FFF" Padding="8" Margin="0,0,8,0" CornerRadius="6" BorderBrush="#DDD" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Last Report Date" FontSize="11" Foreground="#666" />
+                        <TextBlock Text="{Binding CurrentWell.LastReport.ReportDateTime, StringFormat=g}" FontSize="14" />
+                    </StackPanel>
+                </Border>
+                <Border Background="#FFF" Padding="8" Margin="0,0,8,0" CornerRadius="6" BorderBrush="#DDD" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Current MD" FontSize="11" Foreground="#666" />
+                        <TextBlock Text="{Binding CurrentWell.TotalMD}" FontSize="14" />
+                    </StackPanel>
+                </Border>
+                <Border Background="#FFF" Padding="8" CornerRadius="6" BorderBrush="#DDD" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Current Activity" FontSize="11" Foreground="#666" />
+                        <TextBlock Text="{Binding CurrentWell.CurrentOperation}" FontSize="14" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
 
-                        <!-- Reports List -->
-                        <Border Style="{StaticResource ReportsGridStyle}" Background="White" BorderBrush="#DDD" BorderThickness="1" CornerRadius="6" Padding="8">
-                            <DockPanel>
-                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Right" Margin="0,0,0,8">
-                                    <Button Content="+ New Report" Background="#FFA500" Foreground="White" Padding="10,6" Command="{Binding NewReportCommand}" />
-                                </StackPanel>
+            <!-- Reports Section -->
+            <Grid Grid.Row="2">
+                <!-- Empty State -->
+                <Border Style="{StaticResource EmptyStateStyle}"
+                        Background="White"
+                        BorderBrush="#DDD"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="20">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="📄"
+                                   FontSize="48"
+                                   HorizontalAlignment="Center"
+                                   Foreground="#CCC"
+                                   Margin="0,0,0,16" />
+                        <TextBlock Text="No reports yet for this well"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8" />
+                        <Button Content="Create First Report"
+                                Background="#FFA500"
+                                Foreground="White"
+                                Padding="16,8"
+                                Command="{Binding NewReportCommand}"
+                                HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
 
-                                <DataGrid ItemsSource="{Binding Reports}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Interval #" Binding="{Binding IntervalNumber}" Width="100" />
-                                        <DataGridTextColumn Header="Date/Time" Binding="{Binding ReportDateTime, StringFormat=g}" Width="160" />
-                                        <DataGridTextColumn Header="MD (ft)" Binding="{Binding MD}" Width="100" />
-                                        <DataGridTextColumn Header="TVD (ft)" Binding="{Binding TVD}" Width="100" />
-                                        <DataGridTextColumn Header="Activity" Binding="{Binding Activity}" Width="*" />
-                                        <DataGridTemplateColumn Header="Actions" Width="200">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Button Content="View" Margin="2" Padding="6,2" 
-                                                                Command="{Binding DataContext.ViewReportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                CommandParameter="{Binding}" />
-                                                        <Button Content="Edit" Margin="2" Padding="6,2" 
-                                                                Command="{Binding DataContext.EditReportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                CommandParameter="{Binding}" />
-                                                        <Button Content="Duplicate" Margin="2" Padding="6,2" 
-                                                                Command="{Binding DataContext.DuplicateReportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                CommandParameter="{Binding}" />
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </DockPanel>
-                        </Border>
-                    </Grid>
-                </Grid>
+                <!-- Reports List -->
+                <Border Style="{StaticResource ReportsGridStyle}"
+                        Background="White"
+                        BorderBrush="#DDD"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="8">
+                    <DockPanel>
+                        <StackPanel Orientation="Horizontal"
+                                    DockPanel.Dock="Top"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,0,8">
+                            <Button Content="+ New Report"
+                                    Background="#FFA500"
+                                    Foreground="White"
+                                    Padding="10,6"
+                                    Command="{Binding NewReportCommand}" />
+                        </StackPanel>
+
+                        <DataGrid ItemsSource="{Binding Reports}"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Interval #"
+                                                    Binding="{Binding IntervalNumber}"
+                                                    Width="100" />
+                                <DataGridTextColumn Header="Date/Time"
+                                                    Binding="{Binding ReportDateTime, StringFormat=g}"
+                                                    Width="160" />
+                                <DataGridTextColumn Header="MD (ft)"
+                                                    Binding="{Binding MD}"
+                                                    Width="100" />
+                                <DataGridTextColumn Header="TVD (ft)"
+                                                    Binding="{Binding TVD}"
+                                                    Width="100" />
+                                <DataGridTextColumn Header="Activity"
+                                                    Binding="{Binding Activity}"
+                                                    Width="*" />
+                                <DataGridTemplateColumn Header="Actions"
+                                                        Width="200">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button Content="View"
+                                                        Margin="2"
+                                                        Padding="6,2"
+                                                        Command="{Binding DataContext.ViewReportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}" />
+                                                <Button Content="Edit"
+                                                        Margin="2"
+                                                        Padding="6,2"
+                                                        Command="{Binding DataContext.EditReportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}" />
+                                                <Button Content="Duplicate"
+                                                        Margin="2"
+                                                        Padding="6,2"
+                                                        Command="{Binding DataContext.DuplicateReportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>
