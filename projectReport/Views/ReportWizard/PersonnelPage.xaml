@@ -1,0 +1,95 @@
+<UserControl x:Class="ProjectReport.Views.ReportWizard.PersonnelPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Margin="20">
+        <ScrollViewer>
+            <StackPanel>
+                <TextBlock Text="Personnel on Rig" FontSize="18" FontWeight="Bold" Margin="0,0,0,20" />
+
+                <!-- Operator Reps -->
+                <GroupBox Header="Operator Representative(s)" Margin="0,0,0,16" Padding="10">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding Report.OperatorReps}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="14" />
+                                        <Button Grid.Column="1" Content="❌" Foreground="Red" Background="Transparent" BorderThickness="0"
+                                                Click="RemoveOperator_Click" Tag="{Binding}"
+                                                ToolTip="Remove" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBox x:Name="TxtNewOperator" Width="200" Margin="0,0,8,0" />
+                            <Button Content="+ Add" Foreground="Green" Click="AddOperator_Click" Padding="8,2"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Contractor Reps -->
+                <GroupBox Header="Contractor Representative(s)" Margin="0,0,0,16" Padding="10">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding Report.ContractorReps}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="14" />
+                                        <Button Grid.Column="1" Content="❌" Foreground="Red" Background="Transparent" BorderThickness="0"
+                                                Click="RemoveContractor_Click" Tag="{Binding}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBox x:Name="TxtNewContractor" Width="200" Margin="0,0,8,0" />
+                            <Button Content="+ Add" Foreground="Green" Click="AddContractor_Click" Padding="8,2"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Baroid reps -->
+                <GroupBox Header="Baroid / GSA Representative(s)" Margin="0,0,0,16" Padding="10">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding Report.BaroidReps}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="14" />
+                                        <Button Grid.Column="1" Content="❌" Foreground="Red" Background="Transparent" BorderThickness="0"
+                                                 Click="RemoveBaroid_Click" Tag="{Binding}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBox x:Name="TxtNewBaroid" Width="200" Margin="0,0,8,0" />
+                            <Button Content="+ Add" Foreground="Green" Click="AddBaroid_Click" Padding="8,2"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

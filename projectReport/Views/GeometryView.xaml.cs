@@ -17,7 +17,7 @@ namespace ProjectReport.Views
 {
     public partial class GeometryView : UserControl
     {
-        private GeometryViewModel _viewModel;
+        private GeometryViewModel? _viewModel;
         private WellboreVisualizer _visualizer;
         private object? _draggedItem;
         private int _draggedIndex = -1;
@@ -28,36 +28,32 @@ namespace ProjectReport.Views
             {
                 InitializeComponent();
                 
-                // Initialize services
-                var geometryService = new GeometryCalculationService();
-                var dataService = new DataPersistenceService();
-                var thermalService = new ThermalGradientService();
-                
-                // Initialize ViewModel with required services
-                _viewModel = new GeometryViewModel(geometryService, dataService, thermalService);
-                DataContext = _viewModel;
-                
+                // Initialize default ViewModel if not set (will be checked/updated in OnDataContextChanged)
+                if (DataContext == null)
+                {
+                     // Initialize services
+                    var geometryService = new GeometryCalculationService();
+                    var dataService = new DataPersistenceService();
+                    var thermalService = new ThermalGradientService();
+                    
+                    // Initialize ViewModel with required services
+                    _viewModel = new GeometryViewModel(geometryService, dataService, thermalService);
+                    DataContext = _viewModel;
+                }
+                else if (DataContext is GeometryViewModel vm)
+                {
+                    _viewModel = vm;
+                }
+
                 // Initialize Visualizer
                 _visualizer = new WellboreVisualizer(VisualSchemeCanvas);
 
                 // Subscribe to events
                 Loaded += GeometryView_Loaded;
+                DataContextChanged += GeometryView_DataContextChanged;
                 KeyDown += GeometryView_KeyDown; // Add keyboard shortcuts
                 
-                // Subscribe to collection changes for validations
-                _viewModel.WellboreComponents.CollectionChanged += WellboreComponents_CollectionChanged;
-                foreach (var component in _viewModel.WellboreComponents)
-                {
-                    component.PropertyChanged += WellboreComponent_PropertyChanged;
-                }
-                foreach (var component in _viewModel.DrillStringComponents)
-                {
-                    component.PropertyChanged += DrillStringComponent_PropertyChanged;
-                }
-                foreach (var point in _viewModel.SurveyPoints)
-                {
-                    point.PropertyChanged += SurveyPoint_PropertyChanged;
-                }
+                SubscribeToViewModelEvents();
             }
             catch (Exception ex)
             {
@@ -65,6 +61,62 @@ namespace ProjectReport.Views
                     "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 throw;
             }
+        }
+
+        private void GeometryView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is GeometryViewModel newVm)
+            {
+                UnsubscribeFromViewModelEvents();
+                _viewModel = newVm;
+                SubscribeToViewModelEvents();
+                UpdateVisualization();
+            }
+        }
+
+        private void SubscribeToViewModelEvents()
+        {
+            if (_viewModel == null) return;
+            
+            _viewModel.WellboreComponents.CollectionChanged += WellboreComponents_CollectionChanged;
+            foreach (var component in _viewModel.WellboreComponents)
+            {
+                component.PropertyChanged += WellboreComponent_PropertyChanged;
+            }
+            foreach (var component in _viewModel.DrillStringComponents)
+            {
+                component.PropertyChanged += DrillStringComponent_PropertyChanged;
+            }
+            foreach (var point in _viewModel.SurveyPoints)
+            {
+                point.PropertyChanged += SurveyPoint_PropertyChanged;
+            }
+            
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        private void UnsubscribeFromViewModelEvents()
+        {
+             if (_viewModel == null) return;
+            
+            _viewModel.WellboreComponents.CollectionChanged -= WellboreComponents_CollectionChanged;
+            // Note: Individual item subscriptions are harder to unsubscribe in bulk without tracking, 
+            // but for this scope it might be acceptable or we track them.
+            // Ideally we iterate existing items and unsubscribe.
+             foreach (var component in _viewModel.WellboreComponents)
+            {
+                component.PropertyChanged -= WellboreComponent_PropertyChanged;
+            }
+            foreach (var component in _viewModel.DrillStringComponents)
+            {
+                component.PropertyChanged -= DrillStringComponent_PropertyChanged;
+            }
+            foreach (var point in _viewModel.SurveyPoints)
+            {
+                point.PropertyChanged -= SurveyPoint_PropertyChanged;
+            }
+            
+            _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         }
 
         private void GeometryView_KeyDown(object sender, KeyEventArgs e)

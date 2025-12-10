@@ -18,6 +18,7 @@ using ProjectReport.Models.Geometry.Survey;
 using ProjectReport.Models.Geometry.WellTest;
 using ProjectReport.Services;
 using ProjectReport.Views.Geometry;
+using ProjectReport.Views.Modals; // Added for Modal
 using ProjectReport.Models.Geometry.ThermalGradient;
 
 namespace ProjectReport.ViewModels.Geometry
@@ -25,6 +26,7 @@ namespace ProjectReport.ViewModels.Geometry
     public class GeometryViewModel : BaseViewModel
     {
         private readonly GeometryCalculationService _geometryService;
+        private readonly GeometryValidationService _validationService; // validation service
         private readonly DataPersistenceService _dataService;
         private readonly ThermalGradientService _thermalService;
         private Well? _currentWell; // Reference to the current well being edited
@@ -44,6 +46,7 @@ namespace ProjectReport.ViewModels.Geometry
         public GeometryViewModel(GeometryCalculationService geometryService, DataPersistenceService dataService, ThermalGradientService thermalService)
         {
             _geometryService = geometryService ?? throw new ArgumentNullException(nameof(geometryService));
+            _validationService = new GeometryValidationService(); // new instance
             _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
             _thermalService = thermalService ?? throw new ArgumentNullException(nameof(thermalService));
 
@@ -106,6 +109,7 @@ namespace ProjectReport.ViewModels.Geometry
                 foreach (WellboreComponent component in e.NewItems)
                 {
                     component.PropertyChanged += OnWellboreComponentChanged;
+                    ValidateWellboreComponent(component);
                 }
             }
             if (e.OldItems != null)
@@ -115,6 +119,13 @@ namespace ProjectReport.ViewModels.Geometry
                     component.PropertyChanged -= OnWellboreComponentChanged;
                 }
             }
+            
+            // Re-validate all components after collection change (order may have changed)
+            foreach (var component in WellboreComponents)
+            {
+                ValidateWellboreComponent(component);
+            }
+            
             RecalculateTotals();
         }
 
@@ -142,13 +153,55 @@ namespace ProjectReport.ViewModels.Geometry
             if (e.PropertyName == nameof(WellboreComponent.TopMD) || 
                 e.PropertyName == nameof(WellboreComponent.BottomMD) ||
                 e.PropertyName == nameof(WellboreComponent.ID) ||
-                e.PropertyName == nameof(WellboreComponent.OD))
+                e.PropertyName == nameof(WellboreComponent.OD) ||
+                e.PropertyName == nameof(WellboreComponent.SectionType) ||
+                e.PropertyName == nameof(WellboreComponent.Washout))
             {
                 if (sender is WellboreComponent component)
                 {
                     _geometryService.CalculateWellboreComponentVolume(component, "Imperial");
+                    ValidateWellboreComponent(component);
                 }
                 RecalculateTotals();
+            }
+        }
+
+        /// <summary>
+        /// Validates a wellbore component against all rules including telescoping and casing progression
+        /// </summary>
+        private void ValidateWellboreComponent(WellboreComponent component)
+        {
+            if (component == null) return;
+            
+            var sorted = WellboreComponents.OrderBy(c => c.TopMD).ToList();
+            int index = sorted.IndexOf(component);
+            
+            if (index < 0) return;
+            
+            var previousComponent = index > 0 ? sorted[index - 1] : null;
+            
+            // Validate telescopic diameter (OD[n] < ID[n-1])
+            component.ValidateTelescopicDiameter(previousComponent);
+            
+            // Validate casing depth progression
+            component.ValidateCasingDepthProgression(previousComponent);
+            
+            // Handle casing override logic
+            if (previousComponent != null && 
+                (component.SectionType == WellboreSectionType.Casing || component.SectionType == WellboreSectionType.Liner) &&
+                (previousComponent.SectionType == WellboreSectionType.Casing || previousComponent.SectionType == WellboreSectionType.Liner))
+            {
+                // Check for valid casing override: same TopMD, deeper or equal BottomMD
+                bool isCasingOverride = Math.Abs(component.TopMD - previousComponent.TopMD) < 0.01 && 
+                                       component.BottomMD >= previousComponent.BottomMD;
+                
+                if (isCasingOverride)
+                {
+                    // Valid override - previous casing is replaced/extended
+                    // Show notification to user (matches spec message)
+                    ToastNotificationService.Instance.ShowInfo(
+                        "⚠ Casing Override detected → previous casing replaced.");
+                }
             }
         }
 
@@ -212,6 +265,7 @@ namespace ProjectReport.ViewModels.Geometry
         public ICommand LoadCommand => new RelayCommand(async _ => await LoadProjectAsync());
         public ICommand ExportToCsvCommand => new RelayCommand(ExportToCsv);
         public ICommand ShowVisualizationCommand => new RelayCommand(ShowVisualization);
+        public ICommand ForceToBottomCommand => new RelayCommand(_ => ExecuteForceToBottom());
         
         // Export commands for individual tabs
         public ICommand ExportWellboreCsvCommand => new RelayCommand(ExportWellboreCsv);
@@ -246,6 +300,46 @@ namespace ProjectReport.ViewModels.Geometry
                 }
 
                 // BR-WG-003: Check for other validation errors
+                // Run detailed Geometry Validation
+                var validationResult = _validationService.ValidateWellbore(WellboreComponents, 300.0); // Assuming 300.0 for now, should be derived from context? User prompt said "300.00 ft" in rules.
+                
+                // Clear existing UI errors
+                foreach (var comp in WellboreComponents) comp.ClearValidationErrors();
+
+                if (!validationResult.IsValid || validationResult.HasWarnings)
+                {
+                    // Map errors/warnings back to components for UI highlighting if needed
+                    foreach (var item in validationResult.Items)
+                    {
+                        if (int.TryParse(item.ComponentId, out int index) && index >= 0 && index < WellboreComponents.Count)
+                        {
+                            WellboreComponents[index].AddValidationError(item.Message);
+                        }
+                    }
+
+                    // Show Modal
+                    var modal = new ValidationResultModal(validationResult);
+                    if (Application.Current.MainWindow != null)
+                        modal.Owner = Application.Current.MainWindow;
+                        
+                    modal.ShowDialog();
+
+                    // Logic:
+                    // If Critical Errors exist -> Stop (IsValid is false)
+                    // If Only Warnings exist -> Check if user clicked "Continue"
+                    if (validationResult.HasCriticalErrors)
+                    {
+                        return; // Block Save
+                    }
+                    
+                    if (validationResult.HasWarnings && !modal.ContinueConfirmed)
+                    {
+                        return; // User cancelled warning
+                    }
+                    
+                    // If we reach here, it's either Valid or Warnings were Confirmed.
+                }
+
                 if (WellboreComponents.Any(c => !c.IsValid))
                 {
                     ToastNotificationService.Instance.ShowError("Please fix validation errors in Wellbore Geometry before saving.");
@@ -256,6 +350,15 @@ namespace ProjectReport.ViewModels.Geometry
                 if (DrillStringComponents.Any(c => !c.IsValid))
                 {
                     ToastNotificationService.Instance.ShowError("Please fix validation errors in Drill String Geometry before saving.");
+                    return;
+                }
+
+                // Check if drill string exceeds well MD (physically impossible)
+                if (DrillStringExceedsMD)
+                {
+                    ToastNotificationService.Instance.ShowError(
+                        $"Drill string exceeds well depth by {Math.Abs(DepthDifferential):F2} ft. " +
+                        "Please shorten or revise components before saving.");
                     return;
                 }
 
@@ -337,6 +440,12 @@ namespace ProjectReport.ViewModels.Geometry
             {
                 component.PropertyChanged += OnWellboreComponentChanged;
                 WellboreComponents.Add(component);
+            }
+            
+            // Validate all components after loading
+            foreach (var component in WellboreComponents)
+            {
+                ValidateWellboreComponent(component);
             }
 
             // Load Drill String Components
@@ -927,6 +1036,14 @@ namespace ProjectReport.ViewModels.Geometry
             }
         }
 
+        /// <summary>
+        /// Forces the drill string to bottom by extending the last component
+        /// </summary>
+        private void ExecuteForceToBottom()
+        {
+            CalculateDrillStringToBottom();
+        }
+
         public double FeetMissing
         {
             get
@@ -946,48 +1063,139 @@ namespace ProjectReport.ViewModels.Geometry
             }
         }
 
+        /// <summary>
+        /// Gets the total drill string length (sum of all component lengths)
+        /// </summary>
+        public double TotalDrillStringLength => DrillStringComponents.Sum(c => c.Length);
+
+        /// <summary>
+        /// Gets the bottom differential (Well_MD - TotalStringLength)
+        /// Positive = string is short, Negative = string exceeds TD, Zero = on bottom
+        /// </summary>
+        public double BottomDifferential => DepthDifferential;
+
+        /// <summary>
+        /// Gets the depth differential status for color coding
+        /// </summary>
+        public string DepthDifferentialStatus
+        {
+            get
+            {
+                double diff = DepthDifferential;
+                if (Math.Abs(diff) < 0.01) return "OnBottom"; // 0 ft
+                if (diff > 0) return "Short"; // Positive - not reaching
+                return "Overrun"; // Negative - exceeds TD
+            }
+        }
+
+        /// <summary>
+        /// Gets the color for depth differential indicator
+        /// </summary>
+        public System.Windows.Media.Brush DepthDifferentialColor
+        {
+            get
+            {
+                return DepthDifferentialStatus switch
+                {
+                    "OnBottom" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green),
+                    "Short" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Orange),
+                    "Overrun" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red),
+                    _ => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Gray)
+                };
+            }
+        }
+
+        /// <summary>
+        /// Checks if drill string exceeds well MD (should block save)
+        /// </summary>
+        public bool DrillStringExceedsMD => DepthDifferential < -0.01;
+
+        /// <summary>
+        /// Gets BitToBottom calculation when last component is Bit
+        /// BitToBottom = FinalStringLength - Well_MD
+        /// </summary>
+        public double? BitToBottom
+        {
+            get
+            {
+                if (DrillStringComponents.Count == 0) return null;
+                var lastComponent = DrillStringComponents.LastOrDefault();
+                if (lastComponent?.ComponentType != ComponentType.Bit) return null;
+                
+                return TotalDrillStringLength - TotalWellboreMD;
+            }
+        }
+
+        /// <summary>
+        /// Gets suggested BHA components when last component is DrillPipe
+        /// </summary>
+        public List<ComponentType> SuggestedBHAComponents
+        {
+            get
+            {
+                if (DrillStringComponents.Count == 0) return new List<ComponentType>();
+                var lastComponent = DrillStringComponents.LastOrDefault();
+                if (lastComponent?.ComponentType != ComponentType.DrillPipe) return new List<ComponentType>();
+                
+                return new List<ComponentType>
+                {
+                    ComponentType.DC,        // Drill Collar
+                    ComponentType.HWDP,      // Heavy Weight
+                    ComponentType.Stabilizer, // Stabilizer
+                    ComponentType.Bit        // Bit
+                };
+            }
+        }
+
         private void CalculateDrillStringToBottom()
         {
             if (TotalWellboreMD <= 0) return;
+            if (DrillStringComponents.Count == 0) return;
 
-            // BR-DS-004: Find the topmost drill pipe (Assuming Top-to-Bottom configuration, so it's the first one)
-            var topDrillPipe = DrillStringComponents
-                .FirstOrDefault(c => c.ComponentType == ComponentType.DrillPipe);
-
-            if (topDrillPipe == null)
+            // Get the LAST component in the drill string (bottom-most)
+            var lastComponent = DrillStringComponents.LastOrDefault();
+            if (lastComponent == null)
             {
-                ToastNotificationService.Instance.ShowWarning("No Drill Pipe component found to adjust.");
+                ToastNotificationService.Instance.ShowWarning("No drill string components found to adjust.");
                 return;
             }
 
             double totalOtherLength = DrillStringComponents
-                .Where(c => c != topDrillPipe)
+                .Where(c => c != lastComponent)
                 .Sum(c => c.Length);
 
-            double requiredDrillPipeLength = Math.Max(0, TotalWellboreMD - totalOtherLength);
+            double delta = TotalWellboreMD - (totalOtherLength + lastComponent.Length);
 
-            if (Math.Abs(topDrillPipe.Length - requiredDrillPipeLength) > 0.01)
+            // If string is shorter than MD, extend last component
+            if (delta > 0.01)
             {
-                double oldLength = topDrillPipe.Length;
+                double oldLength = lastComponent.Length;
+                double newLength = lastComponent.Length + delta;
                 
-                // Update the topmost drill pipe component
-                topDrillPipe.Length = requiredDrillPipeLength;
+                // Update the last component
+                lastComponent.Length = newLength;
                 
                 // Highlight the adjusted field
-                topDrillPipe.IsHighlighted = true;
+                lastComponent.IsHighlighted = true;
                 
                 // Remove highlight after 2 seconds
                 Task.Delay(2000).ContinueWith(_ => 
                 {
                     Application.Current.Dispatcher.Invoke(() => 
                     {
-                        topDrillPipe.IsHighlighted = false;
+                        lastComponent.IsHighlighted = false;
                     });
                 });
                 
                 // Show notification
                 ToastNotificationService.Instance.ShowSuccess(
-                    $"Drill String forced to bottom. Top component length adjusted from {oldLength:F2} ft to {requiredDrillPipeLength:F2} ft.");
+                    $"Drill String forced to bottom. Last component length adjusted from {oldLength:F2} ft to {newLength:F2} ft (+{delta:F2} ft).");
+            }
+            // If string exceeds MD, show error (but don't auto-adjust)
+            else if (delta < -0.01)
+            {
+                ToastNotificationService.Instance.ShowError(
+                    $"Drill string exceeds well depth by {Math.Abs(delta):F2} ft. Please shorten components or revise the drill string configuration.");
             }
         }
 
@@ -1014,6 +1222,15 @@ namespace ProjectReport.ViewModels.Geometry
             OnPropertyChanged(nameof(TotalCirculationVolume));
             OnPropertyChanged(nameof(TotalWellboreMD));
             UpdateAnnularVolumeDetails();
+            
+            // Update drill string depth properties
+            OnPropertyChanged(nameof(TotalDrillStringLength));
+            OnPropertyChanged(nameof(BottomDifferential));
+            OnPropertyChanged(nameof(DepthDifferentialStatus));
+            OnPropertyChanged(nameof(DepthDifferentialColor));
+            OnPropertyChanged(nameof(DrillStringExceedsMD));
+            OnPropertyChanged(nameof(BitToBottom));
+            OnPropertyChanged(nameof(SuggestedBHAComponents));
             
             // Update validation error counts
             OnPropertyChanged(nameof(WellboreErrorCount));

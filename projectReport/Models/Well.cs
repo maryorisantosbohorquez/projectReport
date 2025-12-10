@@ -438,8 +438,14 @@ namespace ProjectReport.Models
         public ObservableCollection<SurveyPoint> SurveyPoints { get; set; } = new ObservableCollection<SurveyPoint>();
         public ObservableCollection<WellTest> WellTests { get; set; } = new ObservableCollection<WellTest>();
         public ObservableCollection<ThermalGradientPoint> ThermalGradientPoints { get; set; } = new ObservableCollection<ThermalGradientPoint>();
+        public ObservableCollection<Report> Reports { get; set; } = new ObservableCollection<Report>();
 
         #endregion
+
+        /// <summary>
+        /// Convenience property to get the most recent report or null
+        /// </summary>
+        public Report? LastReport => Reports.Count > 0 ? Reports[^1] : null;
 
         #region Validation Properties
 

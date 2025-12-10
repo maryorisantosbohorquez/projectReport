@@ -1,0 +1,122 @@
+<UserControl x:Class="ProjectReport.Views.ReportWizard.ReportDetailsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style TargetType="TextBox">
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="true">
+                    <Setter Property="ToolTip"
+                            Value="{Binding RelativeSource={x:Static RelativeSource.Self},
+                            Path=(Validation.Errors)[0].ErrorContent}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    
+    <Grid Margin="20">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="General Well Information" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16" />
+
+                <!-- Row 1 -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                    <StackPanel Width="150" Margin="0,0,16,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Interval #" FontWeight="Medium" />
+                            <TextBlock Text=" *" Foreground="Red" />
+                        </StackPanel>
+                        <TextBox Text="{Binding Report.IntervalNumber, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" Padding="4" Margin="0,4,0,0" />
+                    </StackPanel>
+                    
+                    <StackPanel Width="200" Margin="0,0,16,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Report Date/Time" FontWeight="Medium" />
+                            <TextBlock Text=" *" Foreground="Red" />
+                        </StackPanel>
+                        <DatePicker SelectedDate="{Binding Report.ReportDateTime, ValidatesOnDataErrors=True}" Margin="0,4,0,0" /> 
+                        <!-- Time picker omitted for brevity, usually needs 3rd party or custom -->
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Row 2 -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                     <StackPanel Width="150" Margin="0,0,16,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Report MD (ft)" FontWeight="Medium" />
+                            <TextBlock Text=" *" Foreground="Red" />
+                        </StackPanel>
+                        <TextBox Text="{Binding Report.MD, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" Padding="4" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <StackPanel Width="150" Margin="0,0,16,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Report TVD (ft)" FontWeight="Medium" />
+                            <TextBlock Text=" *" Foreground="Red" />
+                        </StackPanel>
+                        <TextBox Text="{Binding Report.TVD, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" Padding="4" Margin="0,4,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock Text="Operational Data" FontSize="16" FontWeight="SemiBold" Margin="0,16,0,16" />
+
+                <!-- Row 3 -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                    <StackPanel Width="250" Margin="0,0,16,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Well Section" FontWeight="Medium" />
+                            <TextBlock Text=" *" Foreground="Red" />
+                        </StackPanel>
+                        <!-- Assuming simple text or hardcoded list for now, ideally inherited from VM or Enum -->
+                        <ComboBox Text="{Binding Report.WellSection, Mode=TwoWay, ValidatesOnDataErrors=True}" IsEditable="True" Margin="0,4,0,0">
+                            <ComboBoxItem>Surface</ComboBoxItem>
+                            <ComboBoxItem>Intermediate</ComboBoxItem>
+                            <ComboBoxItem>Production</ComboBoxItem>
+                            <ComboBoxItem>Liner</ComboBoxItem>
+                        </ComboBox>
+                         <StackPanel Orientation="Horizontal" Visibility="{Binding InheritedFields, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="From last report" Foreground="Green" FontSize="10" FontStyle="Italic" Margin="0,2,0,0" />
+                            <Button Content="clear" FontSize="10" Foreground="Blue" Background="Transparent" BorderThickness="0" Margin="4,0,0,0"
+                                    Command="{Binding DataContext.StartFreshCommand, RelativeSource={RelativeSource AncestorType=Window}}" /> 
+                                    <!-- Note: Binding to Window DC might fail if UserControl is in Frame. Using RelativeSource AncestorType=UserControl if hosted properly or binding Proxy -->
+                        </StackPanel>
+                    </StackPanel>
+
+                     <StackPanel Width="150" Margin="0,0,16,0">
+                        <TextBlock Text="Max BHT (°F)" FontWeight="Medium" />
+                        <TextBox Text="{Binding Report.MaxBHT}" Padding="4" Margin="0,4,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Row 4 -->
+                <StackPanel Margin="0,0,0,16">
+                     <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Present Activity" FontWeight="Medium" />
+                        <TextBlock Text=" *" Foreground="Red" />
+                    </StackPanel>
+                    <TextBox Text="{Binding Report.PresentActivity, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" Padding="4" Margin="0,4,0,0" />
+                </StackPanel>
+
+                <!-- Row 5 -->
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="Primary Fluid Set" FontWeight="Medium" />
+                    <TextBox Text="{Binding Report.PrimaryFluidSet}" Padding="4" Margin="0,4,0,0" />
+                </StackPanel>
+
+                <!-- Row 6 -->
+                 <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="Other Active Fluids" FontWeight="Medium" />
+                    <TextBox Text="{Binding Report.OtherActiveFluids}" Height="60" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="4" Margin="0,4,0,0" />
+                </StackPanel>
+
+                 <!-- Row 7 -->
+                <CheckBox IsChecked="{Binding Report.OperationalIssues}" Content="Operational issues occurred in this report" Margin="0,8,0,0" />
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

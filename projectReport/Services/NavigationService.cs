@@ -41,6 +41,13 @@ namespace ProjectReport.Services
             NavigationRequested?.Invoke(this, new NavigationEventArgs(NavigationTarget.Geometry, wellId));
         }
 
+            /// <summary>
+            /// Navigate to Well Dashboard for a specific well
+            /// </summary>
+            public void NavigateToWellDashboard(int wellId)
+            {
+                NavigationRequested?.Invoke(this, new NavigationEventArgs(NavigationTarget.WellDashboard, wellId));
+            }
         /// <summary>
         /// Navigate back to previous module
         /// </summary>
@@ -58,6 +65,7 @@ namespace ProjectReport.Services
         Home,
         WellData,
         Geometry,
+        WellDashboard,
         Back
     }
 

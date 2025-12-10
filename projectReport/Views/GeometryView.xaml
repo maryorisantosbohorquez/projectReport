@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ProjectReport.Views"
              xmlns:geometry="clr-namespace:ProjectReport.Views.Geometry"
+             xmlns:converters="clr-namespace:ProjectReport.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="1200"
              Loaded="GeometryView_Loaded"
@@ -12,6 +13,11 @@
     <Grid>
         <TabControl Style="{StaticResource GeometryTabControl}"
                     SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+            <TabControl.Resources>
+                <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+                <converters:CollectionToVisibilityConverter x:Key="CollectionToVis"/>
+                <converters:NullToVisibilityConverter x:Key="NullToVis"/>
+            </TabControl.Resources>
             
             <!-- Wellbore Geometry -->
             <TabItem Header="Wellbore Geometry">
@@ -48,7 +54,32 @@
           CanUserAddRows="False"
           CanUserDeleteRows="True"
           SelectionMode="Single">
+    <DataGrid.RowStyle>
+        <Style TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasValidationError}" Value="True">
+                    <Setter Property="Background" Value="#FFF5F5"/>
+                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </DataGrid.RowStyle>
     <DataGrid.Columns>
+        <!-- 0. Validation Status -->
+         <DataGridTemplateColumn Header="" Width="30">
+            <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="!" 
+                               Foreground="Red" 
+                               FontWeight="Bold" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"
+                               ToolTip="{Binding ValidationMessage}"
+                               Visibility="{Binding HasValidationError, Converter={StaticResource BoolToVis}}"/>
+                </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
 
         <!-- 1. ID -->
         <DataGridTextColumn Header="ID"
@@ -78,7 +109,7 @@
             </DataGridTemplateColumn.CellEditingTemplate>
         </DataGridTemplateColumn>
 
-        <!-- 3. OD (in) -->
+        <!-- 3. OD (in) - Always editable. For OpenHole: represents hole diameter -->
         <DataGridTemplateColumn Header="OD (in)" Width="100">
             <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
@@ -88,11 +119,9 @@
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Style.Triggers>
-                                    <!-- Para OpenHole: OD no aplica -->
-                                    <DataTrigger Binding="{Binding SectionType}" Value="OpenHole">
-                                        <Setter Property="Text" Value="N/A"/>
-                                        <Setter Property="Foreground" Value="Gray"/>
-                                        <Setter Property="FontStyle" Value="Italic"/>
+                                    <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                        <Setter Property="Foreground" Value="Red"/>
+                                        <Setter Property="ToolTip" Value="{Binding ValidationMessage}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -106,9 +135,10 @@
                         <TextBox.Style>
                             <Style TargetType="TextBox">
                                 <Style.Triggers>
-                                    <!-- Para OpenHole: deshabilitar edición -->
-                                    <DataTrigger Binding="{Binding SectionType}" Value="OpenHole">
-                                        <Setter Property="IsEnabled" Value="False"/>
+                                    <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                        <Setter Property="Background" Value="#FFF5F5"/>
+                                        <Setter Property="BorderBrush" Value="Red"/>
+                                        <Setter Property="ToolTip" Value="{Binding ValidationMessage}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -118,10 +148,56 @@
             </DataGridTemplateColumn.CellEditingTemplate>
         </DataGridTemplateColumn>
 
-        <!-- 4. ID (in) -->
-        <DataGridTextColumn Header="ID (in)"
-                            Binding="{Binding ID, StringFormat=F3}"
-                            Width="100"/>
+        <!-- 4. ID (in) - Disabled for OpenHole (always 0.000) -->
+        <DataGridTemplateColumn Header="ID (in)" Width="100">
+            <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding ID, StringFormat=F3}" 
+                               Padding="5,0" 
+                               VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <!-- Para OpenHole: ID siempre es 0.000 -->
+                                    <DataTrigger Binding="{Binding SectionType}" Value="OpenHole">
+                                        <Setter Property="Foreground" Value="Gray"/>
+                                        <Setter Property="FontStyle" Value="Italic"/>
+                                    </DataTrigger>
+                                    <!-- Highlight validation errors -->
+                                    <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                        <Setter Property="Foreground" Value="Red"/>
+                                        <Setter Property="ToolTip" Value="{Binding ValidationMessage}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+            <DataGridTemplateColumn.CellEditingTemplate>
+                <DataTemplate>
+                    <TextBox Text="{Binding ID, StringFormat=F3, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox">
+                                <Style.Triggers>
+                                    <!-- Para OpenHole: deshabilitar edición de ID -->
+                                    <DataTrigger Binding="{Binding SectionType}" Value="OpenHole">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                        <Setter Property="Background" Value="#F0F0F0"/>
+                                    </DataTrigger>
+                                    <!-- Highlight validation errors -->
+                                    <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                        <Setter Property="Background" Value="#FFF5F5"/>
+                                        <Setter Property="BorderBrush" Value="Red"/>
+                                        <Setter Property="ToolTip" Value="{Binding ValidationMessage}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                </DataTemplate>
+            </DataGridTemplateColumn.CellEditingTemplate>
+        </DataGridTemplateColumn>
 
         <!-- 5. Top MD (ft) -->
         <DataGridTextColumn Header="Top MD (ft)" 
@@ -153,6 +229,11 @@
                                         <Setter Property="Foreground" Value="Black"/>
                                         <Setter Property="FontStyle" Value="Normal"/>
                                     </DataTrigger>
+                                    <!-- Highlight validation errors for washout -->
+                                    <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                        <Setter Property="Foreground" Value="Red"/>
+                                        <Setter Property="ToolTip" Value="{Binding ValidationMessage}"/>
+                                    </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </TextBlock.Style>
@@ -171,6 +252,12 @@
                                     <!-- Solo habilitado cuando es OpenHole -->
                                     <DataTrigger Binding="{Binding SectionType}" Value="OpenHole">
                                         <Setter Property="IsEnabled" Value="True"/>
+                                    </DataTrigger>
+                                    <!-- Highlight validation errors -->
+                                    <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                        <Setter Property="Background" Value="#FFF5F5"/>
+                                        <Setter Property="BorderBrush" Value="Red"/>
+                                        <Setter Property="ToolTip" Value="{Binding ValidationMessage}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -239,22 +326,79 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <CheckBox Content="Force Drill String to Bottom" 
-                                         IsChecked="{Binding ForceDrillStringToBottom}"
-                                         Margin="0,0,0,10"
-                                         Foreground="{StaticResource BlackBrush}"/>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="Total Drill String MD: " FontSize="12" FontWeight="SemiBold" 
+                                              Foreground="#FF808080" Margin="0,0,10,0"/>
+                                    <TextBlock Text="{Binding TotalDrillStringLength, StringFormat='{}{0:F2} ft'}" 
+                                              FontSize="12" FontWeight="Bold" 
+                                              Foreground="Orange" Margin="0,0,20,0"/>
+                                    <TextBlock Text="Depth to Bottom: " FontSize="12" FontWeight="SemiBold" 
+                                              Foreground="#FF808080" Margin="0,0,10,0"/>
+                                    <TextBlock Text="{Binding DepthDifferential, StringFormat='{}{0:+0.00;-0.00;0.00} ft'}" 
+                                              FontSize="12" FontWeight="Bold" 
+                                              Foreground="{Binding DepthDifferentialColor}"/>
+                                    <!-- Status indicator -->
+                                    <TextBlock Margin="10,0,0,0" FontSize="12" FontWeight="Bold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DepthDifferentialStatus}" Value="OnBottom">
+                                                        <Setter Property="Text" Value="🟢 On Bottom"/>
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding DepthDifferentialStatus}" Value="Short">
+                                                        <Setter Property="Text" Value="🟡 Not Reaching"/>
+                                                        <Setter Property="Foreground" Value="Orange"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding DepthDifferentialStatus}" Value="Overrun">
+                                                        <Setter Property="Text" Value="🔴 Exceeds Depth"/>
+                                                        <Setter Property="Foreground" Value="Red"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                     <TextBlock Text="Total Wellbore MD: " FontSize="12" FontWeight="SemiBold" 
                                               Foreground="#FF808080" Margin="0,0,10,0"/>
                                     <TextBlock Text="{Binding TotalWellboreMD, StringFormat='{}{0:F2} ft'}" 
                                               FontSize="12" FontWeight="Bold" 
                                               Foreground="Orange" Margin="0,0,20,0"/>
-                                    <TextBlock Text="Depth Differential: " FontSize="12" FontWeight="SemiBold" 
-                                              Foreground="#FF808080" Margin="0,0,10,0"/>
-                                    <TextBlock Text="{Binding DepthDifferential, StringFormat='{}{0:F2} ft'}" 
-                                              FontSize="12" FontWeight="Bold" 
-                                              Foreground="Orange"/>
+                                    <!-- BitToBottom display when last component is Bit -->
+                                    <TextBlock FontSize="12" FontWeight="SemiBold" Margin="0,0,10,0" Foreground="Blue"
+                                              Visibility="{Binding BitToBottom, Converter={StaticResource NullToVis}}">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="Bit to Bottom: {0:F2} ft">
+                                                <Binding Path="BitToBottom"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
                                 </StackPanel>
+                                <!-- BHA Suggestions when last component is DrillPipe -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"
+                                           Visibility="{Binding SuggestedBHAComponents, Converter={StaticResource CollectionToVis}}">
+                                    <TextBlock Text="💡 Suggested BHA Components: " FontSize="11" FontWeight="SemiBold" 
+                                              Foreground="#FF808080" Margin="0,0,10,0"/>
+                                    <ItemsControl ItemsSource="{Binding SuggestedBHAComponents}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" Margin="5,0" 
+                                                          FontSize="11" Foreground="Blue"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                                <Button Content="🔥 Force Drill String to Bottom" 
+                                       Command="{Binding ForceToBottomCommand}"
+                                       Background="#FF4CAF50" Foreground="White" Padding="10,5" 
+                                       Margin="0,0,10,0" HorizontalAlignment="Left"
+                                       ToolTip="Automatically extend the last component to reach well bottom"/>
                             </StackPanel>
                             <Button Grid.Column="1" Content="Add Component" 
                                    Background="#FFE0E0E0" Foreground="Black" Padding="10,5" Margin="5" 
@@ -273,7 +417,39 @@
                                  Drop="DrillStringDataGrid_Drop"
                                  PreviewMouseLeftButtonDown="DrillStringDataGrid_PreviewMouseLeftButtonDown"
                                  PreviewMouseMove="DrillStringDataGrid_PreviewMouseMove">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Style.Triggers>
+                                        <!-- Highlight rows with validation errors -->
+                                        <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                            <Setter Property="Background" Value="#FFF5F5"/>
+                                            <Setter Property="BorderBrush" Value="Red"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                        </DataTrigger>
+                                        <!-- Highlight rows that were auto-adjusted -->
+                                        <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                            <Setter Property="Background" Value="#E8F5E9"/>
+                                            <Setter Property="BorderBrush" Value="#4CAF50"/>
+                                            <Setter Property="BorderThickness" Value="2"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
                             <DataGrid.Columns>
+                                <!-- Validation Status Column -->
+                                <DataGridTemplateColumn Header="" Width="30">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="❌" 
+                                                      Foreground="Red" 
+                                                      FontWeight="Bold" 
+                                                      HorizontalAlignment="Center" 
+                                                      VerticalAlignment="Center"
+                                                      ToolTip="{Binding ValidationMessage}"
+                                                      Visibility="{Binding HasErrors, Converter={StaticResource BoolToVis}}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="ID" 
                                                  Binding="{Binding Id}" 
                                                  Width="60" 

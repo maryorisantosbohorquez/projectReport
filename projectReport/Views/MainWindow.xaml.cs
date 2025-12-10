@@ -16,6 +16,7 @@ namespace ProjectReport.Views
         private GeometryView? _geometryView;
         private HomeView? _homeView;
         private WellDataView? _wellDataView;
+        private Views.WellDashboardView? _wellDashboardView;
 
         public Project CurrentProject { get; set; }
 
@@ -76,6 +77,10 @@ namespace ProjectReport.Views
                     case NavigationTarget.Geometry:
                         if (e.WellId.HasValue)
                             NavigateToGeometry(e.WellId.Value);
+                        break;
+                    case NavigationTarget.WellDashboard:
+                        if (e.WellId.HasValue)
+                            NavigateToWellDashboard(e.WellId.Value);
                         break;
                 }
             });
@@ -142,6 +147,25 @@ namespace ProjectReport.Views
             ContentTitle.Text = $"Geometry - {well.WellName}";
             ContentArea.Content = _geometryView;
             UpdateStatus($"Geometry Module Loaded for {well.WellName}");
+        }
+
+        private void NavigateToWellDashboard(int wellId)
+        {
+            var well = CurrentProject.Wells.FirstOrDefault(w => w.Id == wellId);
+            if (well == null)
+            {
+                UpdateStatus($"Well with ID {wellId} not found");
+                return;
+            }
+
+            _wellDashboardView = new Views.WellDashboardView();
+            var vm = new ProjectReport.ViewModels.WellDashboardViewModel(CurrentProject);
+            vm.LoadWell(well);
+            _wellDashboardView.DataContext = vm;
+
+            ContentTitle.Text = $"Dashboard - {well.WellName}";
+            ContentArea.Content = _wellDashboardView;
+            UpdateStatus($"Well Dashboard Loaded for {well.WellName}");
         }
 
         #endregion

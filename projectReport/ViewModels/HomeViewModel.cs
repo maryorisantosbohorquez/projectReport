@@ -215,9 +215,9 @@ namespace ProjectReport.ViewModels
             {
                 _project.SetActiveWell(well.Id);
                 
-                // Navigate to Geometry module
-                NavigationService.Instance.NavigateToGeometry(well.Id);
-                ToastNotificationService.Instance.ShowInfo($"Opening well: {well.WellName}");
+                // Navigate to Well Dashboard
+                NavigationService.Instance.NavigateToWellDashboard(well.Id);
+                ToastNotificationService.Instance.ShowInfo($"Opening well dashboard: {well.WellName}");
             }
         }
 
@@ -303,7 +303,17 @@ namespace ProjectReport.ViewModels
             {
                 try
                 {
-                    // TODO: Show confirmation dialog
+                    var result = System.Windows.MessageBox.Show(
+                        $"Are you sure you want to delete {well.WellName}? This action cannot be undone.",
+                        "Delete Well",
+                        System.Windows.MessageBoxButton.YesNo,
+                        System.Windows.MessageBoxImage.Warning);
+
+                    if (result == System.Windows.MessageBoxResult.No)
+                    {
+                        return;
+                    }
+
                     _project.RemoveWell(well.Id);
                     
                     await DataPersistenceService.SaveProjectAsync(_projectFilePath, _project);
