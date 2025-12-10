@@ -236,6 +236,21 @@ namespace ProjectReport.Views
             _viewModel.RecalculateTotals();
         }
 
+        private void AddBitComponent_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel?.InsertStandardBhaComponent(ComponentType.Bit);
+        }
+
+        private void AddDcComponent_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel?.InsertStandardBhaComponent(ComponentType.DC);
+        }
+
+        private void AddHwdpComponent_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel?.InsertStandardBhaComponent(ComponentType.HWDP);
+        }
+
         private void ConfigureComponent_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is DrillStringComponent component)

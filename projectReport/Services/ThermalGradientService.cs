@@ -96,6 +96,39 @@ namespace ProjectReport.Services
         }
 
         /// <summary>
+        /// Computes linear regression (slope and intercept) for TVD vs Temperature
+        /// Returns slope in °F/ft and intercept in °F
+        /// </summary>
+        public (double Slope, double Intercept) ComputeLinearRegression(List<ThermalGradientPoint> points)
+        {
+            if (points == null || points.Count < 2)
+                return (0, 0);
+
+            var xs = points.Select(p => p.TVD).ToList();
+            var ys = points.Select(p => p.Temperature).ToList();
+
+            double meanX = xs.Average();
+            double meanY = ys.Average();
+
+            double numerator = 0;
+            double denominator = 0;
+
+            for (int i = 0; i < xs.Count; i++)
+            {
+                double dx = xs[i] - meanX;
+                numerator += dx * (ys[i] - meanY);
+                denominator += dx * dx;
+            }
+
+            if (Math.Abs(denominator) < 1e-9)
+                return (0, meanY);
+
+            double slope = numerator / denominator;
+            double intercept = meanY - slope * meanX;
+            return (slope, intercept);
+        }
+
+        /// <summary>
         /// Validates TVD ordering in thermal gradient points
         /// </summary>
         /// <returns>List of validation errors</returns>
@@ -160,11 +193,26 @@ namespace ProjectReport.Services
 
                 if (p2.Temperature < p1.Temperature)
                 {
-                    warnings.Add($"Point ID {p2.Id}: Temperature decreases with depth (from {p1.Temperature:F1}°F to {p2.Temperature:F1}°F). Verify this value.");
+                    warnings.Add($"Error T4: La temperatura está disminuyendo a medida que la TVD aumenta (ID {p2.Id}: {p2.Temperature:F1}°F < {p1.Temperature:F1}°F). Verifique los datos.");
                 }
             }
 
             return warnings;
+        }
+
+        /// <summary>
+        /// Validates surface temperature reasonableness (TVD = 0)
+        /// </summary>
+        public string? ValidateSurfaceTemperature(ThermalGradientPoint surfacePoint)
+        {
+            if (surfacePoint == null) return null;
+            if (Math.Abs(surfacePoint.TVD) > 0.001) return null;
+
+            if (surfacePoint.Temperature < 32 || surfacePoint.Temperature > 120)
+            {
+                return "Advertencia: Temperatura superficial fuera de rango típico (32°F - 120°F).";
+            }
+            return null;
         }
 
         /// <summary>

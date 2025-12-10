@@ -29,6 +29,7 @@ namespace ProjectReport.ViewModels.Geometry
         private readonly GeometryValidationService _validationService; // validation service
         private readonly DataPersistenceService _dataService;
         private readonly ThermalGradientService _thermalService;
+        private const double DepthTolerance = 0.01;
         private Well? _currentWell; // Reference to the current well being edited
         private string _wellName = string.Empty;
         private string _reportNumber = string.Empty;
@@ -36,6 +37,11 @@ namespace ProjectReport.ViewModels.Geometry
         private string _location = string.Empty;
         private string _rigName = string.Empty;
         private int _selectedTabIndex;
+        private bool _depthOverrunToastShown;
+        private string _drillStringDepthErrorMessage = string.Empty;
+        private string _bhaWarningMessage = string.Empty;
+        private string _bhaInsertPosition = "Bottom";
+        private readonly List<string> _bhaInsertPositions = new() { "Top", "Bottom" };
         
         public int SelectedTabIndex
         {
@@ -75,6 +81,7 @@ namespace ProjectReport.ViewModels.Geometry
             // Subscribe to collection changes
             WellboreComponents.CollectionChanged += OnWellboreCollectionChanged;
             DrillStringComponents.CollectionChanged += OnDrillStringCollectionChanged;
+            SurveyPoints.CollectionChanged += OnSurveyCollectionChanged;
             WellboreComponents.CollectionChanged += (s, e) => OnPropertyChanged(nameof(WellboreSectionNames));
 
             // Subscribe to property changes in components
@@ -85,6 +92,10 @@ namespace ProjectReport.ViewModels.Geometry
             foreach (var component in DrillStringComponents)
             {
                 component.PropertyChanged += OnDrillStringComponentChanged;
+            }
+            foreach (var point in SurveyPoints)
+            {
+                point.PropertyChanged += OnSurveyPointChanged;
             }
         }
 
@@ -219,6 +230,63 @@ namespace ProjectReport.ViewModels.Geometry
             }
         }
 
+        private void OnSurveyCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (SurveyPoint point in e.NewItems)
+                {
+                    point.PropertyChanged += OnSurveyPointChanged;
+                    ValidateSurveyPoint(point);
+                }
+            }
+            if (e.OldItems != null)
+            {
+                foreach (SurveyPoint point in e.OldItems)
+                {
+                    point.PropertyChanged -= OnSurveyPointChanged;
+                }
+            }
+            
+            // Re-validate all points after collection change (order may have changed)
+            foreach (var point in SurveyPoints)
+            {
+                ValidateSurveyPoint(point);
+            }
+        }
+
+        private void OnSurveyPointChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SurveyPoint.MD) || 
+                e.PropertyName == nameof(SurveyPoint.TVD) ||
+                e.PropertyName == nameof(SurveyPoint.HoleAngle) ||
+                e.PropertyName == nameof(SurveyPoint.Azimuth))
+            {
+                if (sender is SurveyPoint point)
+                {
+                    ValidateSurveyPoint(point);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates a survey point against depth progression rules (S1)
+        /// </summary>
+        private void ValidateSurveyPoint(SurveyPoint point)
+        {
+            if (point == null) return;
+            
+            var sorted = SurveyPoints.OrderBy(p => p.MD).ToList();
+            int index = sorted.IndexOf(point);
+            
+            if (index < 0) return;
+            
+            var previousPoint = index > 0 ? sorted[index - 1] : null;
+            
+            // Validate S1: Depth progression
+            point.ValidateDepthProgression(previousPoint);
+        }
+
         // Header fields
         public string WellName
         {
@@ -265,7 +333,7 @@ namespace ProjectReport.ViewModels.Geometry
         public ICommand LoadCommand => new RelayCommand(async _ => await LoadProjectAsync());
         public ICommand ExportToCsvCommand => new RelayCommand(ExportToCsv);
         public ICommand ShowVisualizationCommand => new RelayCommand(ShowVisualization);
-        public ICommand ForceToBottomCommand => new RelayCommand(_ => ExecuteForceToBottom());
+        public ICommand ForceToBottomCommand => new RelayCommand(_ => ExecuteForceToBottom(), _ => CanForceToBottom);
         
         // Export commands for individual tabs
         public ICommand ExportWellboreCsvCommand => new RelayCommand(ExportWellboreCsv);
@@ -356,9 +424,7 @@ namespace ProjectReport.ViewModels.Geometry
                 // Check if drill string exceeds well MD (physically impossible)
                 if (DrillStringExceedsMD)
                 {
-                    ToastNotificationService.Instance.ShowError(
-                        $"Drill string exceeds well depth by {Math.Abs(DepthDifferential):F2} ft. " +
-                        "Please shorten or revise components before saving.");
+                    ShowDepthOverrunError();
                     return;
                 }
 
@@ -1063,6 +1129,16 @@ namespace ProjectReport.ViewModels.Geometry
             }
         }
 
+        public bool HasDrillStringDepthError => TotalWellboreMD > 0 && DepthDifferential < -DepthTolerance;
+
+        public string DrillStringDepthErrorMessage
+        {
+            get => _drillStringDepthErrorMessage;
+            private set => SetProperty(ref _drillStringDepthErrorMessage, value);
+        }
+
+        public bool CanForceToBottom => !HasDrillStringDepthError && TotalWellboreMD > 0 && DrillStringComponents.Count > 0;
+
         /// <summary>
         /// Gets the total drill string length (sum of all component lengths)
         /// </summary>
@@ -1082,7 +1158,7 @@ namespace ProjectReport.ViewModels.Geometry
             get
             {
                 double diff = DepthDifferential;
-                if (Math.Abs(diff) < 0.01) return "OnBottom"; // 0 ft
+                if (Math.Abs(diff) < DepthTolerance) return "OnBottom"; // 0 ft
                 if (diff > 0) return "Short"; // Positive - not reaching
                 return "Overrun"; // Negative - exceeds TD
             }
@@ -1108,7 +1184,7 @@ namespace ProjectReport.ViewModels.Geometry
         /// <summary>
         /// Checks if drill string exceeds well MD (should block save)
         /// </summary>
-        public bool DrillStringExceedsMD => DepthDifferential < -0.01;
+        public bool DrillStringExceedsMD => TotalWellboreMD > 0 && DepthDifferential < -DepthTolerance;
 
         /// <summary>
         /// Gets BitToBottom calculation when last component is Bit
@@ -1147,8 +1223,102 @@ namespace ProjectReport.ViewModels.Geometry
             }
         }
 
+        public string BhaWarningMessage
+        {
+            get => _bhaWarningMessage;
+            private set => SetProperty(ref _bhaWarningMessage, value);
+        }
+
+        public bool ShowBhaWarning => !string.IsNullOrWhiteSpace(BhaWarningMessage);
+
+        public IEnumerable<string> BhaInsertPositions => _bhaInsertPositions;
+
+        public string BhaInsertPosition
+        {
+            get => _bhaInsertPosition;
+            set => SetProperty(ref _bhaInsertPosition, value);
+        }
+
+        public void InsertStandardBhaComponent(ComponentType componentType)
+        {
+            var component = CreateDefaultBhaComponent(componentType);
+            if (component == null) return;
+
+            if (string.Equals(BhaInsertPosition, "Top", StringComparison.OrdinalIgnoreCase))
+            {
+                DrillStringComponents.Insert(0, component);
+            }
+            else
+            {
+                DrillStringComponents.Add(component);
+            }
+
+            component.PropertyChanged += OnDrillStringComponentChanged;
+            RecalculateTotals();
+        }
+
+        private DrillStringComponent? CreateDefaultBhaComponent(ComponentType componentType)
+        {
+            double holeSize = GetHoleDiameter();
+            double defaultHole = holeSize > 0 ? holeSize : 8.5;
+
+            switch (componentType)
+            {
+                case ComponentType.Bit:
+                    return new DrillStringComponent
+                    {
+                        Id = GetNextDrillStringId(),
+                        Name = "Bit",
+                        ComponentType = ComponentType.Bit,
+                        Length = 1.0,
+                        OD = defaultHole,
+                        ID = Math.Max(0.5, defaultHole * 0.6)
+                    };
+                case ComponentType.DC:
+                    return new DrillStringComponent
+                    {
+                        Id = GetNextDrillStringId(),
+                        Name = "Drill Collar",
+                        ComponentType = ComponentType.DC,
+                        Length = 30.0,
+                        OD = 7.0,
+                        ID = 3.0
+                    };
+                case ComponentType.HWDP:
+                    return new DrillStringComponent
+                    {
+                        Id = GetNextDrillStringId(),
+                        Name = "HWDP",
+                        ComponentType = ComponentType.HWDP,
+                        Length = 30.0,
+                        OD = 5.0,
+                        ID = 4.276
+                    };
+                default:
+                    return null;
+            }
+        }
+
+        private double GetHoleDiameter()
+        {
+            var openHole = WellboreComponents.LastOrDefault(c => c.SectionType == WellboreSectionType.OpenHole);
+            if (openHole != null && openHole.OD > 0)
+            {
+                return openHole.OD;
+            }
+
+            var lastSection = WellboreComponents.LastOrDefault();
+            return lastSection?.OD ?? 0;
+        }
+
         private void CalculateDrillStringToBottom()
         {
+            if (HasDrillStringDepthError)
+            {
+                ShowDepthOverrunError();
+                return;
+            }
+
             if (TotalWellboreMD <= 0) return;
             if (DrillStringComponents.Count == 0) return;
 
@@ -1167,7 +1337,7 @@ namespace ProjectReport.ViewModels.Geometry
             double delta = TotalWellboreMD - (totalOtherLength + lastComponent.Length);
 
             // If string is shorter than MD, extend last component
-            if (delta > 0.01)
+            if (delta > DepthTolerance)
             {
                 double oldLength = lastComponent.Length;
                 double newLength = lastComponent.Length + delta;
@@ -1192,10 +1362,9 @@ namespace ProjectReport.ViewModels.Geometry
                     $"Drill String forced to bottom. Last component length adjusted from {oldLength:F2} ft to {newLength:F2} ft (+{delta:F2} ft).");
             }
             // If string exceeds MD, show error (but don't auto-adjust)
-            else if (delta < -0.01)
+            else if (delta < -DepthTolerance)
             {
-                ToastNotificationService.Instance.ShowError(
-                    $"Drill string exceeds well depth by {Math.Abs(delta):F2} ft. Please shorten components or revise the drill string configuration.");
+                ShowDepthOverrunError();
             }
         }
 
@@ -1206,6 +1375,10 @@ namespace ProjectReport.ViewModels.Geometry
             TotalAnnularVolume = _geometryService.CalculateTotalAnnularVolume(TotalWellboreVolume, TotalDrillStringVolume);
             TotalCirculationVolume = TotalAnnularVolume + TotalDrillStringVolume;
             TotalWellboreMD = WellboreComponents.Count > 0 ? WellboreComponents.Max(w => w.BottomMD) : 0;
+            // Update Thermal Gradient context with survey depth information
+            var maxSurveyTvd = SurveyPoints.Count > 0 ? SurveyPoints.Max(p => p.TVD) : 0;
+            ThermalGradientViewModel.MaxWellboreTVD = maxSurveyTvd > 0 ? maxSurveyTvd : TotalWellboreMD;
+            ThermalGradientViewModel.HasSurveyData = SurveyPoints.Count > 0;
             if (ForceDrillStringToBottom)
             {
                 CalculateDrillStringToBottom();
@@ -1226,11 +1399,21 @@ namespace ProjectReport.ViewModels.Geometry
             // Update drill string depth properties
             OnPropertyChanged(nameof(TotalDrillStringLength));
             OnPropertyChanged(nameof(BottomDifferential));
+            OnPropertyChanged(nameof(FeetMissing));
+            OnPropertyChanged(nameof(DepthDifferential));
             OnPropertyChanged(nameof(DepthDifferentialStatus));
             OnPropertyChanged(nameof(DepthDifferentialColor));
             OnPropertyChanged(nameof(DrillStringExceedsMD));
             OnPropertyChanged(nameof(BitToBottom));
             OnPropertyChanged(nameof(SuggestedBHAComponents));
+            UpdateDrillStringDepthState();
+            UpdateBhaWarnings();
+            OnPropertyChanged(nameof(DrillStringDepthErrorMessage));
+            OnPropertyChanged(nameof(HasDrillStringDepthError));
+            OnPropertyChanged(nameof(CanForceToBottom));
+            OnPropertyChanged(nameof(BhaWarningMessage));
+            OnPropertyChanged(nameof(ShowBhaWarning));
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             
             // Update validation error counts
             OnPropertyChanged(nameof(WellboreErrorCount));
@@ -1253,6 +1436,58 @@ namespace ProjectReport.ViewModels.Geometry
             foreach (var detail in details)
             {
                 AnnularVolumeDetails.Add(detail);
+            }
+        }
+
+        private void UpdateDrillStringDepthState()
+        {
+            if (TotalWellboreMD <= 0)
+            {
+                DrillStringDepthErrorMessage = string.Empty;
+                _depthOverrunToastShown = false;
+                return;
+            }
+
+            if (HasDrillStringDepthError)
+            {
+                DrillStringDepthErrorMessage =
+                    $"Error D1: La longitud de la sarta de perforación ({TotalDrillStringLength:F2} ft) excede la Profundidad Total del Pozo ({TotalWellboreMD:F2} ft). Ajuste la longitud o la profundidad de la última herramienta.";
+
+                if (!_depthOverrunToastShown)
+                {
+                    ToastNotificationService.Instance.ShowError(DrillStringDepthErrorMessage);
+                    _depthOverrunToastShown = true;
+                }
+            }
+            else
+            {
+                DrillStringDepthErrorMessage = string.Empty;
+                _depthOverrunToastShown = false;
+            }
+        }
+
+        private void ShowDepthOverrunError()
+        {
+            ToastNotificationService.Instance.ShowError(
+                $"Error D1: La longitud de la sarta de perforación ({TotalDrillStringLength:F2} ft) excede la Profundidad Total del Pozo ({TotalWellboreMD:F2} ft). Ajuste la longitud o la profundidad de la última herramienta.");
+        }
+
+        private void UpdateBhaWarnings()
+        {
+            bool hasBitAtEnd = DrillStringComponents.LastOrDefault()?.ComponentType == ComponentType.Bit;
+            bool hasWeightComponent = DrillStringComponents.Any(c => c.ComponentType == ComponentType.DC || c.ComponentType == ComponentType.HWDP);
+
+            if (!hasBitAtEnd || !hasWeightComponent)
+            {
+                var reasons = new List<string>();
+                if (!hasWeightComponent) reasons.Add("no incluye Drill Collars o HWDP");
+                if (!hasBitAtEnd) reasons.Add("el último componente no es un Bit");
+
+                BhaWarningMessage = $"Advertencia: El diseño de la sarta no incluye Drill Collars o Bit ({string.Join(" y ", reasons)}). Esto es inusual para una sarta de perforación.";
+            }
+            else
+            {
+                BhaWarningMessage = string.Empty;
             }
         }
 

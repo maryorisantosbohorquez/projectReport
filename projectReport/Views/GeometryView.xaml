@@ -110,12 +110,29 @@
         </DataGridTemplateColumn>
 
         <!-- 3. OD (in) - Always editable. For OpenHole: represents hole diameter -->
-        <DataGridTemplateColumn Header="OD (in)" Width="100">
+        <DataGridTemplateColumn Width="100">
+            <DataGridTemplateColumn.Header>
+                <TextBlock Text="OD (in)" ToolTip="For OpenHole: Hole diameter drilled by the bit. For Casing/Liner: Outer diameter of the pipe."/>
+            </DataGridTemplateColumn.Header>
             <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding OD, StringFormat=F3}" 
                                Padding="5,0" 
                                VerticalAlignment="Center">
+                        <TextBlock.ToolTip>
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Outer Diameter (OD) of the pipe"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SectionType}" Value="OpenHole">
+                                                <Setter Property="Text" Value="Hole Diameter: The diameter of the hole drilled by the bit"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </TextBlock.ToolTip>
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Style.Triggers>
@@ -132,6 +149,20 @@
             <DataGridTemplateColumn.CellEditingTemplate>
                 <DataTemplate>
                     <TextBox Text="{Binding OD, StringFormat=F3, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.ToolTip>
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Enter the outer diameter of the pipe (in inches)"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SectionType}" Value="OpenHole">
+                                                <Setter Property="Text" Value="Enter the hole diameter drilled by the bit (in inches)"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </TextBox.ToolTip>
                         <TextBox.Style>
                             <Style TargetType="TextBox">
                                 <Style.Triggers>
@@ -148,13 +179,31 @@
             </DataGridTemplateColumn.CellEditingTemplate>
         </DataGridTemplateColumn>
 
+
         <!-- 4. ID (in) - Disabled for OpenHole (always 0.000) -->
-        <DataGridTemplateColumn Header="ID (in)" Width="100">
+        <DataGridTemplateColumn Width="100">
+            <DataGridTemplateColumn.Header>
+                <TextBlock Text="ID (in)" ToolTip="For OpenHole: Automatically set to 0.000 (no inner pipe). For Casing/Liner: Inner diameter of the pipe."/>
+            </DataGridTemplateColumn.Header>
             <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding ID, StringFormat=F3}" 
                                Padding="5,0" 
                                VerticalAlignment="Center">
+                        <TextBlock.ToolTip>
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Inner Diameter (ID) of the pipe"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SectionType}" Value="OpenHole">
+                                                <Setter Property="Text" Value="OpenHole has no inner pipe (ID = 0.000)"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </TextBlock.ToolTip>
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Style.Triggers>
@@ -177,6 +226,20 @@
             <DataGridTemplateColumn.CellEditingTemplate>
                 <DataTemplate>
                     <TextBox Text="{Binding ID, StringFormat=F3, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.ToolTip>
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Enter the inner diameter of the pipe (in inches)"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SectionType}" Value="OpenHole">
+                                                <Setter Property="Text" Value="OpenHole: ID is automatically set to 0.000 (read-only)"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </TextBox.ToolTip>
                         <TextBox.Style>
                             <Style TargetType="TextBox">
                                 <Style.Triggers>
@@ -210,7 +273,10 @@
                             Width="130"/>
 
         <!-- 7. Washout (%) - solo activo para OpenHole -->
-        <DataGridTemplateColumn Header="Washout (%)" Width="120">
+        <DataGridTemplateColumn Width="120">
+            <DataGridTemplateColumn.Header>
+                <TextBlock Text="Washout (%)" ToolTip="Percentage increase in hole diameter due to erosion. Required for OpenHole volume calculation. Typical values: 5-25%. Minimum: 0.01%."/>
+            </DataGridTemplateColumn.Header>
             <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
                     <TextBlock Padding="5,0"
@@ -359,6 +425,11 @@
                                         </TextBlock.Style>
                                     </TextBlock>
                                 </StackPanel>
+                                <TextBlock Text="{Binding DrillStringDepthErrorMessage}"
+                                           Foreground="Red"
+                                           FontWeight="Bold"
+                                           Margin="0,0,0,6"
+                                           Visibility="{Binding HasDrillStringDepthError, Converter={StaticResource BoolToVis}}"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                     <TextBlock Text="Total Wellbore MD: " FontSize="12" FontWeight="SemiBold" 
                                               Foreground="#FF808080" Margin="0,0,10,0"/>
@@ -394,11 +465,30 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
                                 </StackPanel>
-                                <Button Content="🔥 Force Drill String to Bottom" 
+                                <TextBlock Text="{Binding BhaWarningMessage}"
+                                           Foreground="#E65100"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,6"
+                                           Visibility="{Binding ShowBhaWarning, Converter={StaticResource BoolToVis}}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="Insertar BHA:" FontSize="11" FontWeight="SemiBold" 
+                                               Foreground="#FF808080" Margin="0,0,6,0"/>
+                                    <ComboBox ItemsSource="{Binding BhaInsertPositions}"
+                                              SelectedItem="{Binding BhaInsertPosition, Mode=TwoWay}"
+                                              Width="120" Margin="0,0,8,0"/>
+                                    <Button Content="Add Bit" Click="AddBitComponent_Click"
+                                            Background="#FFE0E0E0" Foreground="Black" Padding="8,3" Margin="2"/>
+                                    <Button Content="Add DC" Click="AddDcComponent_Click"
+                                            Background="#FFE0E0E0" Foreground="Black" Padding="8,3" Margin="2"/>
+                                    <Button Content="Add HWDP" Click="AddHwdpComponent_Click"
+                                            Background="#FFE0E0E0" Foreground="Black" Padding="8,3" Margin="2"/>
+                                </StackPanel>
+                                <Button Content="🔥 Ajustar MD al Fondo" 
                                        Command="{Binding ForceToBottomCommand}"
                                        Background="#FF4CAF50" Foreground="White" Padding="10,5" 
                                        Margin="0,0,10,0" HorizontalAlignment="Left"
-                                       ToolTip="Automatically extend the last component to reach well bottom"/>
+                                       IsEnabled="{Binding CanForceToBottom}"
+                                       ToolTip="Ajusta la longitud del último componente para igualar la MD total del pozo. Se desactiva si la sarta excede la profundidad."/>
                             </StackPanel>
                             <Button Grid.Column="1" Content="Add Component" 
                                    Background="#FFE0E0E0" Foreground="Black" Padding="10,5" Margin="5" 
@@ -565,13 +655,120 @@
                                  CanUserAddRows="False"
                                  CanUserDeleteRows="True"
                                  SelectionMode="Single">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                            <Setter Property="Background" Value="#FFF5F5"/>
+                                            <Setter Property="BorderBrush" Value="Red"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
                             <DataGrid.Columns>
+                                <!-- Validation Status Column -->
+                                <DataGridTemplateColumn Header="" Width="30">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="!" 
+                                                      Foreground="Red" 
+                                                      FontWeight="Bold" 
+                                                      HorizontalAlignment="Center" 
+                                                      VerticalAlignment="Center"
+                                                      ToolTip="{Binding ValidationMessage}"
+                                                      Visibility="{Binding HasErrors, Converter={StaticResource BoolToVis}}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                
                                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" IsReadOnly="True"/>
-                                <DataGridTextColumn Header="MD (ft)" Binding="{Binding MD, StringFormat=F2}" Width="130"/>
-                                <DataGridTextColumn Header="TVD (ft)" Binding="{Binding TVD, StringFormat=F2}" Width="120"/>
-                                <DataGridTextColumn Header="Hole Angle (deg)" Binding="{Binding HoleAngle, StringFormat=F2}" Width="140"/>
-                                <DataGridTextColumn Header="Azimuth (deg)" Binding="{Binding Azimuth, StringFormat=F2}" Width="130"/>
-                                <DataGridTextColumn Header="Horizontal Displacement (ft)" Binding="{Binding Northing, StringFormat=F2}" Width="200"/>
+                                
+                                <!-- MD Column with Tooltip -->
+                                <DataGridTemplateColumn Width="130">
+                                    <DataGridTemplateColumn.Header>
+                                        <TextBlock Text="MD (ft)" ToolTip="Measured Depth: Total length of wellbore from surface along the well path. Must increase with each survey point."/>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding MD, StringFormat=F2}" Padding="5,0" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding MD, StringFormat=F2, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+                                
+                                <!-- TVD Column with Tooltip -->
+                                <DataGridTemplateColumn Width="120">
+                                    <DataGridTemplateColumn.Header>
+                                        <TextBlock Text="TVD (ft)" ToolTip="True Vertical Depth: Vertical distance from surface to survey point. Must be ≤ MD and increase with each point."/>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TVD, StringFormat=F2}" Padding="5,0" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding TVD, StringFormat=F2, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+                                
+                                <!-- Hole Angle Column with Tooltip -->
+                                <DataGridTemplateColumn Width="140">
+                                    <DataGridTemplateColumn.Header>
+                                        <TextBlock Text="Hole Angle (deg)" ToolTip="Inclination angle from vertical (0° = vertical, 90° = horizontal). Valid range: 0° - 93°"/>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding HoleAngle, StringFormat=F2}" Padding="5,0" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding HoleAngle, StringFormat=F2, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+                                
+                                <!-- Azimuth Column with Tooltip -->
+                                <DataGridTemplateColumn Width="130">
+                                    <DataGridTemplateColumn.Header>
+                                        <TextBlock Text="Azimuth (deg)" ToolTip="Compass direction (0° = North, 90° = East, 180° = South, 270° = West). Valid range: 0° - 360°"/>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Azimuth, StringFormat=F2}" Padding="5,0" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Azimuth, StringFormat=F2, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+                                
+                                <!-- Horizontal Displacement Column with Tooltip -->
+                                <DataGridTemplateColumn Width="200">
+                                    <DataGridTemplateColumn.Header>
+                                        <TextBlock Text="Horizontal Displacement (ft)" ToolTip="Horizontal distance from wellhead to survey point (calculated from survey data using Minimum Curvature Method)"/>
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Northing, StringFormat=F2}" Padding="5,0" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Northing, StringFormat=F2, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+                                
                                 <DataGridTemplateColumn Header="Actions" Width="120">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
