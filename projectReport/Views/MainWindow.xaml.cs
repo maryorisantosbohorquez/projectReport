@@ -149,15 +149,11 @@ namespace ProjectReport.Views
             GeometrySubmenu.Visibility = Visibility.Visible;
         }
 
-<<<<<<< HEAD
         private void NavigateToWellDashboard(int wellId)
         {
             var well = CurrentProject.Wells.FirstOrDefault(w => w.Id == wellId);
             if (well == null)
-            {
-                UpdateStatus($"Well with ID {wellId} not found");
                 return;
-            }
 
             _wellDashboardView = new Views.WellDashboardView();
             var vm = new ProjectReport.ViewModels.WellDashboardViewModel(CurrentProject);
@@ -166,15 +162,14 @@ namespace ProjectReport.Views
 
             ContentTitle.Text = $"Dashboard - {well.WellName}";
             ContentArea.Content = _wellDashboardView;
-            UpdateStatus($"Well Dashboard Loaded for {well.WellName}");
+            
+            GeometrySubmenu.Visibility = Visibility.Collapsed;
+            GeometrySubmenu.Height = 0;
         }
 
-        #endregion
-=======
         //==========================================
         //  INVENTORY NAVIGATION (BOTÓN NUEVO)
         //==========================================
->>>>>>> 663420e4de4a240da11e20e9186403ee096c7896
 
         private void InventoryButton_Click(object sender, RoutedEventArgs e)
         {
